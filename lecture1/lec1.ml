@@ -74,3 +74,57 @@ let c =
   in b * b;; (* 4 = 2x2 *)
 Printf.printf "c = %i\n" c;;
 Printf.printf "b = %i\n" b;;
+
+(* *)
+Printf.printf "%b\n" true;;
+Printf.printf "%b\n\n" false;;
+
+Printf.printf "a = %i b = %i\n" a b;;
+let cond = if b > a then 25 else 0;;
+Printf.printf "cond = %i\n" cond;;
+
+Printf.printf "%b\n" (3 > 1 && 4 > 6);;
+Printf.printf "%b\n" (3 > 1 || 4 > 6);;
+
+(*
+short-circuit evals
+if the first argument is enough for eval, then we don't
+eval the second
+*)
+let x  = (print_string "\n\nHi\n"; 3 > 1) || 4 > 6;;
+Printf.printf "%b\n" x;;
+(* since the first is true then we do not print bye *)
+let y = 3 > 1 || (print_string "Bye\n"; 4 > 6);;
+Printf.printf "%b\n" y;;
+
+(* tuplesas values *)
+let s = (5,"hi",3.2);;
+(*Printf.printf "%a\n" s;;*)
+(* Printf.printf "(%i,%s,%f)\n" s;;*)
+let (a,b,c) = s;;
+let x = 2,9.3;;
+let d = ((1,4,62),("bye",15),73.95);;
+let (p,(st,_),f) = d;;
+Printf.printf "\n";;
+
+(* Functions *)
+let plus_two n = n + 2;;
+Printf.printf "%i\n" (plus_two 17);;
+(* nameless functions aka lambda terms *)
+Printf.printf "%i\n" ( (fun n -> n+2) 17 );;
+let plus_one = fun n -> n + 1;;
+Printf.printf "%i\n" (plus_one 17);;
+Printf.printf "%i\n" ( (fun x -> x * 3) 5);;
+(*
+Note: in fun v -> exp(v), scope of variable is
+only the body exp(v)
+*)
+let funcs = ((fun y -> y +. 2.0), (fun z -> z * 3));;
+
+(* Values fixed at declaration time *)
+let x = 12;;
+let plus_x y = y + x;;
+Printf.printf "\n%i\n" (plus_x 12);;
+
+let x = 7;;
+Printf.printf "%i\n" (plus_x 12);;
