@@ -128,3 +128,57 @@ Printf.printf "\n%i\n" (plus_x 12);;
 
 let x = 7;;
 Printf.printf "%i\n" (plus_x 12);;
+
+(* *)
+
+let f1 x = x + 2;;
+let f1 = fun x -> x + 2;;
+
+Printf.printf "%i\n" (f1 2);;
+
+let g1 x y = x + y;;
+
+(* three arguments *)
+
+let plus_three a b c = a + b + c;;
+print_int (plus_three 3 4 5);;
+Printf.printf "\n%i \n" (plus_three 3 4 5);;
+
+let plus_three' = fun a -> (fun b -> (fun c -> a + b + c));;
+print_int (plus_three' 3 4 5);;
+Printf.printf "\n%i \n\n" (plus_three' 3 4 5);;
+
+(* Partial application of functions *)
+
+let add_three x y z = x + y + z;;
+let h = add_three 1 2;;
+Printf.printf "%i \n" (h 3);;
+
+(* Functions as arguments *)
+let thrice f x = f(f(f x));;
+let g = thrice plus_two;;
+Printf.printf "%i \n" (g 1);; (* adss 2 to 1 three times*)
+let h = thrice (fun s -> "Hi! " ^ s) "Good-bye!";;
+Printf.printf "%s \n" h;;
+
+(* Functions on tuples *)
+let plus_pair (n,m) = n + m;;
+Printf.printf "%i \n" (plus_pair (3, 4));;
+
+let double x = (x,x);;
+
+(* match expression *)
+let triple_to_pair triple =
+match triple
+with (0, x, y) -> (x, y)
+| (x, 0, y) -> (x, y)
+| (x, y, _) -> (x, y);;
+
+let (a,b) = triple_to_pair (0,1,2);;
+Printf.printf "%i %i\n" a b;;
+let (a,b) = triple_to_pair (2,0,1);;
+Printf.printf "%i %i\n" a b;;
+let (a,b) = triple_to_pair (3,4,124235);;
+Printf.printf "%i %i\n" a b;;
+let (a,b) = triple_to_pair (3,4,0);;
+Printf.printf "%i %i\n" a b;;

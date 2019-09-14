@@ -26,3 +26,5 @@ Printf.printf "\n%i \n" (plus_three 3 4 5);;
 let plus_three' = fun a -> (fun b -> (fun c -> a + b + c));;
 print_int (plus_three' 3 4 5);;
 Printf.printf "\n%i \n" (plus_three' 3 4 5);;
+
+(* TODO: Partial function application *)
