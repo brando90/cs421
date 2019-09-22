@@ -45,3 +45,23 @@ match list with
 | x::xs -> (f x) :: (my_map f xs);;
 
 my_map (fun x -> 2*x) [1;2;3];;
+
+(* *)
+
+let rec poor_rev list =
+match list with
+| [] -> []
+| x::xs ->  (poor_rev xs) @ [x];;
+
+poor_rev [1;2;3;4];;
+
+(*
+Notice that
+*)
+
+let rec rev_tail list rev_list =
+match list with
+| [] -> rev_list
+| x::xs ->  (rev_tail xs (x::rev_list));;
+
+rev_tail [1;2;3;4] [];;
