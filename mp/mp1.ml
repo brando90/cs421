@@ -120,8 +120,28 @@ match l with
   | _ -> (g x) :: list
 ;;
 
+
+let rec apply_even_odd_helper l f g idx =
+match l with
+| [] -> []
+| x::xs -> let list=(apply_even_odd_helper xs f g (idx+1)) in match idx mod 2 with
+  | 0 -> (f x) :: list
+  | _ -> (g x) :: list
+;;
+
+let rec apply_even_odd_elsa1 l f g =
+    match l with
+    | [] -> []
+    | x::xs -> (f x)::(apply_even_odd xs g f);;
+
+let rec apply_even_odd_elsa2 l f g =
+match l with [] -> []
+| x::xs ->  let r = (apply_even_odd xs g f) in (f x)::r;;
+
+let rec apply_even_odd l f g = apply_even_odd_helper l f g 0;;
+
 apply_even_odd [1;2;3] (fun x -> x+1) (fun x -> x - 1);;
-apply_even_odd [(1, 1);(15, 7)] (fun (x, y) -> x + y) (fun (x, y) -> x - y)
+apply_even_odd [(1, 1);(15, 7)] (fun (x, y) -> x + y) (fun (x, y) -> x - y);;
 
 (* 11 even count tr *)
 
