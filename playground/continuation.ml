@@ -28,4 +28,6 @@ let add_triple' (x,y,z) = let p=(x+y) in p + z;;
 
 let add_triple_k (x,y,z) k = addk (x,y) (fun p -> addk (p,z) k);;
 
+(* let add_triple_k_prints (x,y,z) k = addk (x,y) (fun p -> addk (p,z) k);; *)
+
 add_triple_k (1,2,3) report;;
