@@ -33,7 +33,7 @@ string_of_intk 0 (fun s -> (s, String.length s));;
 (* truncatek takes a float n and truncates it in the same way as the truncate
 function which can be found in the pervasives module. *)
 
-let truncatek x k = k (int_of_float x);;
+let truncatek x k = k (int_of_float x);; (* TODO *)
 
 truncatek 3.14 string_of_int;;
 
@@ -90,6 +90,23 @@ shiftk ("##", 3.14) (fun s -> s);;
 shiftk ("##", 3.14) (fun s -> s);;
 shiftk ("", 17.0) (fun s -> (grab_trace s, String.length s));;
 
+let rec all_positive_tail l b =
+match l with
+| [] -> b
+| x::xs -> all_positive_tail xs (b && (x > 0));;
+
+let rec all_positive l = all_positive_tail l true;;
+
+let rec all_positive_tailk l b k =
+match l with
+| [] -> k b
+| x::xs -> gtk (x,0) (fun b1 -> all_positive_tailk xs (b && b1) k );;
+
+let rec all_positivek l k = all_positive_tail l true;;
+
+all_positive [5;3;6;(-1);7];;
+all_positivek [5;3;6;(-1);7] (fun b -> if b then "true" else "false");;
+
 (* TODO *)
 
 let report_int i = Printf.printf "%i\n" i;;
@@ -97,39 +114,47 @@ let report_int i = Printf.printf "%i\n" i;;
 let rec even_count l =
 match l with
 | [] -> 0
-| x::xs -> let r=even_count xs in
-if x mod 2 = 0 then 1 + r else r ;;
+| x::xs -> let r=even_count xs in if x mod 2 = 0 then 1 + r else r ;;
 
 let rec even_countk l k =
 match l with
 | [] -> k 0
 (* | x::xs -> modk (x,2) (fun m -> eqk (m,0) (fun b -> even_countk xs (fun r -> if b then k (r + 1) else k r ) ));; *)
 (* | x::xs -> modk (x,2) (fun m -> eqk (m,0) (fun b -> even_countk xs (fun r -> if b then addk (r,1) (fun ans -> k ans ) else k r ) ));; *)
-| x::xs -> modk (x,2) (fun m -> eqk (m,0) (fun b -> even_countk xs (fun r -> addk (r,1) (fun ans -> if b then k ans else k r ) ) ));;
+(* | x::xs -> modk (x,2) (fun m -> eqk (m,0) (fun b -> even_countk xs (fun r -> addk (r,1) (fun ans -> if b then k ans else k r ) ) ));; *)
+| x::xs -> even_countk xs (fun r -> modk (x,2) (fun m -> eqk (m,0) (fun b -> if b then addk (1,r) k else k r) ) );;
 
-even_count [1;2;3];;
+(* even_count [1;2;3];; *)
 even_countk [1;2;3] report_int;;
 
-(* TODO *)
+(* *)
 
 let report_float f = Printf.printf "%f\n" f;;
 let geqk (a,b) k = k (a >= b);;
+
+let report_bool b = Printf.printf "%b\n" b;;
 
 let rec sum_all (p,l) =
 match l with
 | [] -> 0.0
 | x::xs -> let r=sum_all (p,xs) in if p x then x +. r else r;;
 
+sum_all ( (fun x -> 1.5 <= x),  [1.3;2.5;3.9] );;
+
 let rec sum_allk (pk,l) k =
 match l with
 | [] -> k 0.0
 (* | x::xs -> sum_allk (p,xs) ( fun r -> if p x then k (x +. r) else k r );; *)
-| x::xs -> pk x ( fun b -> sum_allk (pk,xs) (fun r -> if b then k (x +. r) else k r ) );;
+(* | x::xs -> pk x ( fun b -> sum_allk (pk,xs) (fun r -> if b then k (x +. r) else k r ) );; *)
+(* | x::xs -> pk x ( fun b -> sum_allk (pk,xs) (fun r -> if b then float_addk (x, r) k else k r ) );; *)
+(* | x::xs -> pk x ( fun b -> sum_allk (pk,xs) (fun r -> float_addk (x, r) (fun addition -> if b then k addition else k r ) ) );; *)
+| x::xs -> sum_allk (pk,xs) (fun r -> pk x (fun b -> if b then float_addk (x,r) k else k r) ) ;;
 
-sum_all ( (fun x -> 1.5 <= x),  [1.3;2.5;3.9] );;
+(* geqk (1.0, 1.0) report_bool;; *)
 
-let f = (fun x -> fun k -> geqk (x,1.5) k);;
-sum_allk ( f, [1.3;2.5;3.9] ) report_float;;
+(* let f = (fun x -> fun k -> geqk (x,1.5) k);;
+sum_allk ( f, [1.3;2.5;3.9] ) report_float;; *)
+sum_allk ( (fun x -> fun k -> geqk (x,1.5) k), [1.3;2.5;3.9] ) report_float;;
 
 (* *)
 
