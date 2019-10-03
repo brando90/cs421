@@ -90,24 +90,54 @@ shiftk ("##", 3.14) (fun s -> s);;
 shiftk ("##", 3.14) (fun s -> s);;
 shiftk ("", 17.0) (fun s -> (grab_trace s, String.length s));;
 
-let rec all_positive_tail l b =
+let rec all_positive l =
 match l with
-| [] -> b
-| x::xs -> all_positive_tail xs (b && (x > 0));;
+| [] -> true
+(* | x::xs -> (x>=0) && all_positive xs;; *)
+(* | x::xs -> let b=(x>=0) in b && all_positive xs;; *)
+| x::xs -> if not(x>=0) then false else all_positive xs;;
 
-let rec all_positive l = all_positive_tail l true;;
-
-let rec all_positive_tailk l b k =
+let rec all_positivek l k =
 match l with
-| [] -> k b
-| x::xs -> gtk (x,0) (fun b1 -> all_positive_tailk xs (b && b1) k );;
-
-let rec all_positivek l k = all_positive_tail l true;;
+| [] -> k true
+(* | x::xs -> geqk (x,0) (fun b -> all_positivek xs (fun r -> k (b && r) ) );; *)
+| x::xs -> geqk (x,0) (fun b -> notk b (fun b2 -> if b2 then k false else all_positivek xs k) );;
 
 all_positive [5;3;6;(-1);7];;
 all_positivek [5;3;6;(-1);7] (fun b -> if b then "true" else "false");;
 
-(* TODO *)
+(* *)
+
+let rec find_all (p,l) =
+match l with
+| [] -> []
+| x::xs -> let r=find_all (p,xs) in if p x then x::r else r;;
+
+let rec find_allk (pk,l) k =
+match l with
+| [] -> k []
+| x::xs -> find_allk (pk,xs) (fun r -> pk x (fun b -> if b then consk (x,r) k  else k r ) );;
+
+(* find_all ( (fun x -> x mod 2 = 0), [-3; 5; 2; -6] );; *)
+
+find_allk ((fun x -> fun k -> modk (x, 2) (fun n -> eqk (n, 0) k)),
+             [-3; 5; 2; -6] ) print_int_list;;
+
+(* *)
+
+let rec list_prod l =
+match l with
+| [] -> 1
+| x::xs -> let r = list_prod xs in x * r;;
+
+let rec list_prodk l k =
+match l with
+| [] -> k 1
+| x::xs -> list_prodk xs (fun r -> mulk (x,r) k );;
+
+list_prodk [1;2;3] report_int;;
+
+(* *)
 
 let report_int i = Printf.printf "%i\n" i;;
 
