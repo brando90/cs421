@@ -27,3 +27,15 @@ ConstExp (IntConst 5)))
 
 string_of_exp_cps (cps_exp (AppExp (VarExp "f", VarExp "x"))
 (ContVarCPS Kvar));;
+
+string_of_exp_cps (cps_exp (BinOpAppExp
+(IntPlusOp, ConstExp(IntConst 5),
+ConstExp(IntConst 1)))
+(ContVarCPS Kvar));;
+
+string_of_exp_cps (cps_exp (MonOpAppExp (HdOp, ConstExp NilConst))
+(ContVarCPS Kvar));;
+
+string_of_exp_cps (cps_exp (LetInExp ("x", ConstExp(IntConst 2),
+VarExp "x"))
+(ContVarCPS Kvar));;
