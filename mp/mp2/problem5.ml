@@ -24,3 +24,6 @@ string_of_exp_cps (cps_exp (ConstExp (BoolConst true)) (ContVarCPS Kvar));;
 string_of_exp_cps (cps_exp (IfExp (VarExp "b", ConstExp (IntConst 2),
 ConstExp (IntConst 5)))
 (ContVarCPS Kvar));;
+
+string_of_exp_cps (cps_exp (AppExp (VarExp "f", VarExp "x"))
+(ContVarCPS Kvar));;
