@@ -39,3 +39,7 @@ string_of_exp_cps (cps_exp (MonOpAppExp (HdOp, ConstExp NilConst))
 string_of_exp_cps (cps_exp (LetInExp ("x", ConstExp(IntConst 2),
 VarExp "x"))
 (ContVarCPS Kvar));;
+
+string_of_exp_cps (cps_exp (LetRecInExp ("f", "x",VarExp "x",
+ConstExp (IntConst 4)))
+(ContVarCPS Kvar));;
