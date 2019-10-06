@@ -14,7 +14,25 @@ match lst with
 | x::xs -> BinOpAppExp( ConsOp,  tuple_to_pico_tuple x, import_list xs );;
 
 (* Problem 2 *)
-let pair_sums = ConstExp (StringConst "Not implemented yet.")
+let f = VarExp("pair_sums");;
+let x = VarExp("lst");;
+let b = BinOpAppExp(EqOp,VarExp("lst"),ConstExp(NilConst));;
+let t1 = ConstExp(NilConst);;
+let p1 = MonOpAppExp(HdOp,VarExp("lst"));;
+let a1 = BinOpAppExp(IntPlusOp, MonOpAppExp(FstOp,VarExp("x")), MonOpAppExp(SndOp,VarExp("x")) );;
+let a2 = AppExp(f,AppExp(VarExp("tl"),VarExp("lst")));;
+let p2 = BinOpAppExp(ConsOp,a1,a2);;
+let t2 = LetInExp("x",p1,p2);;
+let e1 = IfExp(b,t1,t2);;
+let e2 = AppExp(f, import_list [(7,1);(4,2);(6,3)] );;
+
+let pair_sums = LetRecInExp("pair_sums","lst",e1,e2);;
+
+Printf.printf "\n\n\n";;
+let ans = "let rec pair_sums lst = if lst = [] then [] else let x = hd lst in ((fst x) + (snd x)) :: (pair_sums (tl lst)) in pair_sums (((7,1)) :: (((4,2)) :: (((6,3)) :: [])))";;
+
+let my_ans = (string_of_exp pair_sums);;
+ans = my_ans;;
 
 (* Problem 3 *)
 let rec count_const_in_exp exp =
