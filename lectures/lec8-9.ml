@@ -70,6 +70,54 @@ type const =
 | NilConst
 | UnitConst;;
 
-type binary_tree =
-    | Leaf of int
-    | Tree of binary_tree * binary_tree;;
+(* Polymorphism*)
+
+type 'a option = Some of 'a | None;;
+
+let rec fist p list =
+match list with
+| [] -> None
+| x::xs -> if p x then Some x else p xs;;
+
+(* Mutually Recursive Types *)
+type 'a tree =
+| TreeLeaf of 'a treeList (* treeList define the way branching factor of an arbitrary tree *)
+and 'a treeList = (* defines seperately another type so that we actually have the branching factor *)
+| Last of 'a tree (* Last define the final branch of the tree *)
+| More of ('a tree * 'a treeList) (* Its really just the Cons operator but the elements/values are trees (which can be TreeLists! )*)
+;;
+
+let rec fringe tree =
+match tree with
+| (TreeLeaf x) -> [x]
+| (TreeNode list) -> list_fringe list
+and list_fringe tree_list =
+match tree_list with
+| (Last tree) -> fringe tree
+| (More (tree,list)) ->
+(fringe tree) @ (list_fringe list);;
+
+(* nested recursive types *)
+
+type 'a labeled_tree =
+| TreeNode of ('a * 'a labeled_tree list)
+;;
+
+let tree =
+TreeNode
+(More (TreeLeaf 5,
+(More (TreeNode
+(More (TreeLeaf 3,
+Last (TreeLeaf 2))),
+Last (TreeLeaf 7)))));;
+
+let rec flatten_tree labtree =
+match labtree with
+| TreeNode(x,treelist) -> x::flatten_tree_list treelist
+and flatten_tree_list treelist =
+match treelist with
+| [] -> []
+| labtree::labtrees -> (flatten_tree labtree) @ (flatten_tree_list labtrees)
+;;
+
+flatten_tree tree;;

@@ -43,10 +43,25 @@ let hello = String "Hello!!!";;
 
 (* Recursive variants *)
 
-(* type linked_list =
-  | nil
-  | Cons of int * *)
-
 type binary_tree =
   | Leaf of int
   | Tree of binary_tree * binary_tree;;
+
+Leaf 1;;
+Tree ( Leaf 1, Leaf 2);;
+Tree ( Tree(Leaf 1, Leaf 2), Leaf 3);;
+
+let rec first_leaf_value tree =
+match tree with
+| Leaf n -> n
+| Tree(left_tree, right_tree) -> first_leaf_value left_tree;;
+
+first_leaf_value (Tree ( Tree(Leaf 1, Leaf 2), Leaf 3));;
+
+type 'a list =
+  | Nil
+  | Cons of 'a * ('a list);;
+
+Nil;;
+Cons (1, Nil);; (* [1] 1::Nil *)
+Cons (1, Cons(2, Nil));;
