@@ -38,6 +38,15 @@ type foo =
   | String of string;; (* constructor String that has the value string *)
 
 let nada = Nothing;;
+(*
+# let nada = Nothing;; declares a variable nada of type foo with value Nothing
+val nada : foo = Nothing
+*)
+let x = Int 1;;
+(*
+# let x = Int 1;; declares variable x of type foo with value Int 1
+val x : foo = Int 1
+*)
 let pair12 = Pair (1, 2);;
 let hello = String "Hello!!!";;
 
