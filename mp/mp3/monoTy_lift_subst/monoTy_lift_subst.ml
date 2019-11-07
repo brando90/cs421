@@ -14,6 +14,10 @@ let rec do_subs sigma ty =
       if type_var_name=ty then actual_type
       else do_subs sigma' ty;;
 
+(*
+A substitution phi, when lifted, replaces all the type variables occuring in its input type with the corresponding types.
+val monoTy_lift_subst : (typeVar * monoTy) list -> monoTy -> monoTy =
+*)
 let rec monoTy_lift_subst sigma mono_ty =
 match mono_ty with
   | TyVar ty_v -> do_subs sigma ty_v
@@ -30,13 +34,12 @@ let phi = [(5, mk_fun_ty bool_ty (TyVar(2)))];;
 let tau = (TyConst ("->", [TyVar 1; TyVar 5]));;
 monoTy_lift_subst phi tau;;
 (*
-- : monoTy =
-TyConst ("->", [TyVar 1; TyConst ("->", [TyConst ("bool", []); TyVar 2])])
+- : monoTy = TyConst ("->", [TyVar 1; TyConst ("->", [TyConst ("bool", []); TyVar 2])])
 *)
-
+let x = TyVar 5;;
+monoTy_lift_subst phi x;;
 (*
-
+- : monoTy = TyConst ("->", [TyConst ("bool", []); TyVar 2])
 *)
-
 let lifted_sub = momoTy_lift subst phi;;
 (* val lifted_sub : monoTy -> monoTy = <fun> *)

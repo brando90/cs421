@@ -44,10 +44,17 @@ do_subs phi 5;; (* should return the bool->2*) *)
 (*
 given a substitution, return the function it represents
 (i.e. returns the substitution function represented by the subsitution list)
+val subst_fun : (typeVar * monoTy) list -> typeVar -> monoTy =
 *)
 let rec subst_fun sigma = fun ty -> do_subs sigma ty;;
 
 let subst = subst_fun phi;;
 
 subst 1;;
+(*
+- : monoTy = TyVar 1
+*)
 subst 5;;
+(*
+- : monoTy = TyConst ("->", [TyConst ("bool", []); TyVar 2])
+*)
