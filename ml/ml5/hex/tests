@@ -1,0 +1,92 @@
+let rubric_version = "1.0"
+let rubric_title = "CS421 Fall 2017 MP4"
+
+(**************************************************************************
+ * You can add new test cases by adding new elements to the following lists
+ * Format is:
+ * TEST<X>ARG(<weight>, <function_name>, <arg1>, <arg2>, ..., <argX>)
+ *
+ * <X> is the number of argument that the function being tested takes.
+ **************************************************************************)
+
+(* Test cases should go in this list.
+ * The first element of the pair is the weight of the case,
+ * and the second is the string to be given to the parser.
+ *)
+
+
+let get_all_token_options_aux token s =
+    let b = Lexing.from_string (s^"\n") in
+    let rec g () =
+        match (try Some (token b) with _ -> None) with
+            Some Common.EOF -> []
+            | None -> [None]
+            | t -> t :: g ()
+        in
+    g ()
+
+let get_all_token_options_stu = get_all_token_options_aux Student.token
+let get_all_token_options = ((get_all_token_options_aux Solution.token):string -> Common.token option list)
+
+let fail_get_all_tokens_stu s = try Util.timer 4 (fun () -> Student.try_get_all_tokens s) with _ -> None
+let fail_get_all_tokens s = try Util.timer 4 (fun () -> Solution.try_get_all_tokens s) with _ -> None
+let rubric = [
+
+  (* Student Tests *)
+    TEST1ARG(1, get_all_tokens, "- >= [] in if mod");
+    TEST1ARG(1, get_all_tokens, "0x8844ffaa11");
+    TEST1ARG(1, get_all_tokens, "this is where iff");
+    TEST1ARG(1, get_all_tokens, "\"some string\"");
+    TEST1ARG(1, get_all_tokens, "\" she said, \\\"hello\\\"\"");
+    TEST1ARG(1, get_all_tokens, "\" \\100 \\001 \"");
+    TEST1ARG(1, get_all_tokens, "\"a line \\n starts here; indent \\t starts here next string\" \"starts here\"");
+
+(* Problem 1 *)
+
+  TEST1ARG(1, get_all_tokens, "-");
+  TEST1ARG(1, get_all_tokens, ">="); 
+  TEST1ARG(1, get_all_tokens, "[]");
+  TEST1ARG(1, get_all_tokens, "in");
+  TEST1ARG(1, get_all_tokens, "if");
+  TEST1ARG(1, get_all_tokens, "mod");
+
+(* Probelm 2 *)
+  TEST1ARG(2, get_all_tokens, "0x4a3d2fbc13e  0x12009347645 0xabcdefedcba 0x0");
+
+(* Problem 4 *)
+  TEST1ARG(1, get_all_tokens, "n_______'");
+  TEST1ARG(1, get_all_tokens, "i'm identifying_you");
+  TEST1ARG(1, get_all_tokens, "salamthen elsebeGOOD");
+  TEST1ARG(1, get_all_tokens, "ifin modthen infun");
+  TEST1ARG(1, get_all_tokens, "0x12345s");
+  TEST1ARG_TWOFUN(1, get_all_token_options, get_all_token_options_stu, "s12345 S12345");
+  TEST1ARG_TWOFUN(1, get_all_token_options, get_all_token_options_stu, "salsa Salam");
+  TEST1ARG_TWOFUN(1, get_all_token_options, get_all_token_options_stu, "iff 'alam");
+
+(* Problem 6 *)
+  TEST1ARG(1, get_all_tokens, "\"some string\"");
+  TEST1ARG(1, get_all_tokens, "\" she said, \\\"hello\\\"\"");
+  TEST1ARG(1, get_all_tokens, "\"a line \\n starts here; indent \\t starts here next string\" \"starts here\"");
+  TEST1ARG(1, get_all_tokens, "\"Hello, \\n \\ world! \"");
+  TEST1ARG(1, get_all_tokens, "\" \\100 \\001 \"");
+
+  TEST1ARG(2, get_all_tokens, "\" \\171 \\249 \"");
+  TEST1ARG_TWOFUN(1, get_all_token_options, get_all_token_options_stu, "\"Hi\"\" \\281 \"");
+  TEST1ARG_TWOFUN(1, get_all_token_options, get_all_token_options_stu, "\"Hi\"\" \\999 \"");
+  TEST1ARG(1, get_all_tokens, "\" \\1039 \\2504503 \"");
+  TEST1ARG_TWOFUN(1, get_all_token_options, get_all_token_options_stu, "\"Hi\"\" \\ \n \t \\ \"");
+  TEST1ARG(1, get_all_tokens, "iff the hi \"by \\\n  \t  \\t well?\" bye");
+  TEST1ARG_TWOFUN(2, get_all_token_options, get_all_token_options_stu, "\"\"\"");
+  TEST1ARG(2, get_all_tokens, " \"some\" 0x0 \"salam\" ");
+  TEST1ARG_TWOFUN(1, get_all_token_options, get_all_token_options_stu, "\"Hi\" \"\\6\" ");
+  TEST1ARG_TWOFUN(1, get_all_token_options, get_all_token_options_stu, "\"Hi\" \"\\x26\" ");
+
+  TEST1ARG(1, get_all_tokens, "\"1111111111111111111\"           ");  
+  TEST1ARG(2, get_all_tokens, "\" (*Hello*)\" ");
+  TEST1ARG(2, get_all_tokens, "\" // \" ");
+  TEST1ARG(2, get_all_tokens, "\" iff mode\"  iff mode ");
+  TEST1ARG(2, get_all_tokens, "\"\"           ")
+]
+
+let extra_rubric = [
+]
