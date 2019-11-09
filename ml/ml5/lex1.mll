@@ -3,7 +3,7 @@
   #use "lex1.ml";;
   *)
   type result = Int of int | Float of float |
-  String of string
+  String of string;;
 }
 (* regexps *)
 let digit = ['0'-'9'] (* a single digit btw 0 to 9 *)
