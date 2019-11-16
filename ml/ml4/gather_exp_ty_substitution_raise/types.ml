@@ -10,13 +10,13 @@ type const =
    | NilConst                 (* [ ] *)
    | UnitConst                (* ( ) *)
 
-let string_of_const = function
+(* let string_of_const = function
    BoolConst b     -> (if b then "true" else "false")
  | IntConst i      -> string_of_int i
  | FloatConst f     -> ((string_of_float f)^(if ceil f = floor f then ("0") else ("")))
  | StringConst s   -> ("\""^ (String.escaped s)^ "\"")
  | NilConst        -> "[]"
- | UnitConst       -> "()"
+ | UnitConst       -> "()" *)
 
 type mon_op =
      IntNegOp      (* integer negation *)
@@ -25,12 +25,12 @@ type mon_op =
    | FstOp         (* fst *)
    | SndOp         (* snd *)
 
-let string_of_mon_op = function
+(* let string_of_mon_op = function
      IntNegOp -> "~"
    | HdOp -> "hd"
    | TlOp -> "tl"
    | FstOp -> "fst"
-   | SndOp -> "snd"
+   | SndOp -> "snd" *)
 
 type bin_op =
      IntPlusOp        (* _ + _ *)
@@ -47,7 +47,7 @@ type bin_op =
    | EqOp             (* _ = _ *)
    | GreaterOp        (* _ > _ *)
 
-let string_of_bin_op = function
+(* let string_of_bin_op = function
      IntPlusOp  -> "+"
    | IntMinusOp -> "-"
    | IntTimesOp -> "*"
@@ -60,15 +60,15 @@ let string_of_bin_op = function
    | ConsOp -> "::"
    | CommaOp -> ","
    | EqOp  -> "="
-   | GreaterOp -> ">"
+   | GreaterOp -> ">" *)
 
 type exp =  (* Exceptions will be added in later MPs *)
    | VarExp of string                    (* variables *)
    | ConstExp of const                   (* constants *)
-   | MonOpAppExp of mon_op * exp         (* % e1 - % is a builtin monadic operator *) 
+   | MonOpAppExp of mon_op * exp         (* % e1 - % is a builtin monadic operator *)
    | BinOpAppExp of bin_op * exp * exp   (* e1 % e2 - % is a builtin binary operator *)
    | IfExp of exp * exp * exp            (* if e1 then e2 else e3 *)
-   | AppExp of exp * exp                 (* e1 e2 *) 
+   | AppExp of exp * exp                 (* e1 e2 *)
    | FunExp of string * exp              (* fun x -> e1 *)
    | LetInExp of string * exp * exp      (* let x = e1 in e2 *)
    | LetRecInExp of string * string * exp * exp (* let rec f x = e1 in e2 *)
@@ -80,28 +80,28 @@ type dec =
      Let of string * exp                 (* let x = exp *)
    | LetRec of string * string * exp     (* let rec f x = exp *)
 
-let rec string_of_exp = function
+(* let rec string_of_exp = function
    VarExp s -> s
  | ConstExp c ->  string_of_const c
  | IfExp(e1,e2,e3)->"if " ^ (string_of_exp e1) ^
                  " then " ^ (string_of_exp e2) ^
                  " else " ^ (string_of_exp e3)
- | MonOpAppExp (m,e) ->  (string_of_mon_op m) ^ " " ^ (paren_string_of_exp e) 
- | BinOpAppExp (b,e1,e2) -> 
+ | MonOpAppExp (m,e) ->  (string_of_mon_op m) ^ " " ^ (paren_string_of_exp e)
+ | BinOpAppExp (b,e1,e2) ->
    (match b with CommaOp -> ("(" ^ (paren_string_of_exp e1) ^ (string_of_bin_op b) ^
                               (paren_string_of_exp e2) ^ ")")
     | _ -> ((paren_string_of_exp e1) ^ " " ^ (string_of_bin_op b)
             ^ " " ^ (paren_string_of_exp e2)))
- | AppExp(e1,e2) -> (non_app_paren_string_of_exp e1) ^ " " ^ (paren_string_of_exp e2) 
+ | AppExp(e1,e2) -> (non_app_paren_string_of_exp e1) ^ " " ^ (paren_string_of_exp e2)
  | FunExp (x,e) ->  ("fun " ^ x ^ " -> " ^ (string_of_exp e))
  | LetInExp (x,e1,e2) -> ("let "^x^" = "^ (string_of_exp e1) ^ " in " ^ (string_of_exp e2))
- | LetRecInExp (f,x,e1,e2) -> 
+ | LetRecInExp (f,x,e1,e2) ->
     ("let rec "^f^" "^x^" = "^(string_of_exp e1) ^ " in " ^ (string_of_exp e2))
  | RaiseExp e -> "raise " ^ (string_of_exp e)
  | TryWithExp (e,intopt1,exp1,match_list) ->
     "try " ^ (paren_string_of_exp e) ^  " with " ^
      (string_of_exc_match (intopt1,exp1)) ^
-     (List.fold_left (fun s m -> (s^" | " ^ (string_of_exc_match m))) "" match_list) 
+     (List.fold_left (fun s m -> (s^" | " ^ (string_of_exc_match m))) "" match_list)
 
 and paren_string_of_exp e =
     match e with VarExp _ | ConstExp _ -> string_of_exp e
@@ -110,21 +110,21 @@ and paren_string_of_exp e =
 and non_app_paren_string_of_exp e =
     match e with AppExp (_,_) -> string_of_exp e
     | _ -> paren_string_of_exp e
- 
+
 
 and string_of_exc_match (int_opt, e) =
     (match int_opt with None -> "_" | Some n -> string_of_int n) ^
     " -> " ^
     (string_of_exp e)
-			
-				
+
+
 let string_of_dec = function
    Let (s, e) ->  ("let "^ s ^" = " ^ (string_of_exp e))
- | LetRec (fname,argname,fn) -> 
+ | LetRec (fname,argname,fn) ->
     ("let rec " ^ fname ^ " " ^ argname ^ " = " ^ (string_of_exp fn))
+ *)
 
-
-let print_exp exp = print_string (string_of_exp exp) 
+let print_exp exp = print_string (string_of_exp exp)
 let print_dec dec = print_string (string_of_dec dec)
 
 type typeVar = int
@@ -135,7 +135,7 @@ let rec expand n (list,len) =
         else expand q (((n mod 26)::list), len + 1);;
 
 
-let string_of_typeVar n = 
+(* let string_of_typeVar n =
    let (num_list,len) =
        match (expand n ([],0))
        with ([],l) -> ([],l) (* can't actually happen *)
@@ -149,28 +149,28 @@ let string_of_typeVar n =
     (fun n c -> (String.set s n c; n + 1))
     0
     (List.map (fun x -> Char.chr(x + 97)) num_list)  (* Char.code 'a' = 97 *)
-   in "'"^s;;
+   in "'"^s;; *)
 
 type monoTy = TyVar of typeVar | TyConst of (string * monoTy list)
 
-let rec string_of_monoTy t =
+(* let rec string_of_monoTy t =
   let rec string_of_tylist = function
      []     -> ""
    | t'::[] -> string_of_monoTy t'
    | t'::ts -> string_of_monoTy t'^ ","^ string_of_tylist ts
   in
   let string_of_subty s =
-  match s with 
+  match s with
      TyConst ("*", _) | TyConst ("->", _) -> ("("^ string_of_monoTy s^ ")")
    | _ ->  string_of_monoTy s
-  in 
+  in
     match t with
        TyVar n         -> (string_of_typeVar n)
      |TyConst (name, []) -> name
      |TyConst (name, [ty]) -> (string_of_subty ty^ " "^ name)
      |TyConst ("*", [ty1; ty2]) -> (string_of_subty ty1^ " * "^ string_of_monoTy ty2)
      |TyConst ("->", [ty1; ty2]) -> (string_of_subty ty1^ " -> "^ string_of_monoTy ty2)
-     |TyConst (name, tys) -> ("("^ string_of_tylist tys^ ") "^ name)
+     |TyConst (name, tys) -> ("("^ string_of_tylist tys^ ") "^ name) *)
 
 
 let rec accummulate_freeVarsMonoTy fvs ty =
@@ -198,12 +198,12 @@ let mk_list_ty ty = TyConst("list",[ty])
 
 type polyTy = typeVar list * monoTy  (* the list is for quantified variables *)
 
-let string_of_polyTy (bndVars, t) = match bndVars with [] -> string_of_monoTy t
+(* let string_of_polyTy (bndVars, t) = match bndVars with [] -> string_of_monoTy t
     | _ ->  (List.fold_left
              (fun s v -> s ^ " " ^ string_of_typeVar v)
              "Forall"
              bndVars)
-             ^ ". " ^ string_of_monoTy t
+             ^ ". " ^ string_of_monoTy t *)
 
 let freeVarsPolyTy ((tvs, ty):polyTy) =
     List.filter (fun x -> not(List.mem x tvs)) (freeVarsMonoTy ty)
@@ -235,16 +235,16 @@ let binop_signature binop = match binop with
    | FloatTimesOp   -> float_op_ty
    | FloatDivOp   -> float_op_ty
    | ConcatOp -> string_op_ty
-   | ConsOp -> 
+   | ConsOp ->
        let alpha = TyVar 0
-       in ([0], 
+       in ([0],
               mk_fun_ty alpha (mk_fun_ty (mk_list_ty alpha) (mk_list_ty alpha)))
    | CommaOp ->
        let alpha = TyVar 0 in
        let beta = TyVar 1 in
            ([0;1],
             mk_fun_ty alpha (mk_fun_ty beta (mk_pair_ty alpha beta)))
-   | EqOp -> 
+   | EqOp ->
      let alpha = TyVar 0 in ([0],mk_fun_ty alpha (mk_fun_ty alpha bool_ty))
    | GreaterOp ->
      let alpha = TyVar 0 in ([0],mk_fun_ty alpha (mk_fun_ty alpha bool_ty))
@@ -254,11 +254,11 @@ let monop_signature monop = match monop with
     | TlOp -> let alpha = TyVar 0 in
                   ([0], mk_fun_ty (mk_list_ty alpha) (mk_list_ty alpha))
     | IntNegOp -> ([], mk_fun_ty int_ty int_ty)
-    | FstOp -> 
+    | FstOp ->
        let alpha = TyVar 0 in
        let beta = TyVar 1 in
            ([0;1], mk_fun_ty (mk_pair_ty alpha beta) alpha)
-    | SndOp -> 
+    | SndOp ->
        let alpha = TyVar 0 in
        let beta = TyVar 1 in
            ([0;1], mk_fun_ty (mk_pair_ty alpha beta) beta)
@@ -269,7 +269,7 @@ type 'a env = (string * 'a) list
 let freeVarsEnv l =
     List.fold_right (fun (_,pty) fvs -> freeVarsPolyTy pty @ fvs) l []
 
-let string_of_env string_of_entry gamma = 
+(* let string_of_env string_of_entry gamma =
   let rec string_of_env_aux gamma =
     match gamma with
        []        -> ""
@@ -279,7 +279,7 @@ let string_of_env string_of_entry gamma =
   in
     "{"^ string_of_env_aux gamma^ "}"
 
-let string_of_type_env gamma = string_of_env string_of_polyTy gamma
+let string_of_type_env gamma = string_of_env string_of_polyTy gamma *)
 
 (*environment operations*)
 let rec lookup mapping x =
@@ -299,18 +299,18 @@ type judgment =
    ExpJudgment of type_env * exp * monoTy
  | DecJudgment of type_env * dec * type_env
 
-let string_of_judgment judgment =
+(* let string_of_judgment judgment =
   match judgment with ExpJudgment(gamma, exp, monoTy) ->
         string_of_type_env gamma ^ " |= "^ string_of_exp exp ^
          " : " ^ string_of_monoTy monoTy
   | DecJudgment (gamma, dec, delta) ->
         string_of_type_env gamma ^ " |= "^ string_of_dec dec ^
-         " : " ^ string_of_type_env delta
+         " : " ^ string_of_type_env delta *)
 
 type proof = Proof of proof list * judgment
 
 (*proof printing*)
-let string_of_proof p =
+(* let string_of_proof p =
   let depth_max = 10 in
   let rec string_of_struts = function
      []    -> ""
@@ -325,12 +325,12 @@ let string_of_proof p =
          then string_of_assum depth lst assum
       else ""
   and string_of_assum depth lst assum =
-    match assum with 
+    match assum with
        []     -> ""
      | p'::ps -> string_of_proof_aux p' (depth + 1) (lst@[ps=[]])^
                  string_of_assum depth lst ps
   in
-    string_of_proof_aux p 0 []^ "\n\n"
+    string_of_proof_aux p 0 []^ "\n\n" *)
 
 type substitution = (typeVar * monoTy) list
 

@@ -9,7 +9,7 @@ open Plsolution
 let rec gather_exp_ty_substitution gamma exp tau =
     let judgment = ExpJudgment(gamma, exp, tau) in
     match exp with
-      | ConstExp c ->
+      | ConstExp c -> (* Gamma |- c:tau | unify (tau, freshInstance tau') *)
          let tau' = const_signature c in
          (match unify [(tau, freshInstance tau')] with
              | None       -> None
@@ -22,7 +22,12 @@ let rec gather_exp_ty_substitution gamma exp tau =
       | BinOpAppExp (binop, e1, e2)->
             gather_exp_ty_substitution_BinOpAppExp (binop, e1, e2) gamma tau gather_exp_ty_substitution
       | AppExp (e1, e2) -> gather_exp_ty_substitution_AppExp (e1, e2) gamma tau gather_exp_ty_substitution
-      | RaiseExp e -> raise (Failure "Not implemented yet")
+      | RaiseExp e ->
+        let some_proof_sigma_e = gather_exp_ty_substitution gamma e IntConst in
+          match some_proof_sigma_e with
+            | None -> None
+            | Some proof_sigma_e -> match proof_sigma_e with
+              | (proof_e,sigma_e) -> Some( Proof([proof_e], judgment), sigma_e)
       | LetInExp (x, e1, e2) -> gather_exp_ty_substitution_LetInExp (x, e1, e2) gamma tau gather_exp_ty_substitution
       | TryWithExp (e, intopt1, e1, match_list) ->
             gather_exp_ty_substitution_TryWithExp (e, intopt1, e1, match_list) gamma tau gather_exp_ty_substitution
