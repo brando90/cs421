@@ -1,0 +1,43 @@
+# Useful Ocaml commands
+To create a new version:
+```
+  opam switch create 4.07.0
+```
+
+Switch compiler version
+```
+  opam switch 4.07.0
+```
+
+# basics
+put the folder for your image and inside have a Dockerfile for it
+to build a docker image run:
+```
+  docker build -t TAG_NAME .
+```
+
+to see your images:
+```
+  docker images
+```
+
+to create/run a container based on that image run:
+```
+  docker run -it TAG_NAME
+```
+
+#
+to create/run a container with a volum to my cs421 code:
+```
+  docker run -it -v ~/cs421:/home/opam/opam-repository/cs421 cs421
+```
+
+
+
+----
+
+# Useful links:
+
+https://discuss.ocaml.org/t/opam-2-beta-how-to-list-and-switch-ocaml-version/1390
+https://discuss.ocaml.org/t/how-does-one-switch-ocaml-version/4702
+https://discuss.ocaml.org/t/how-does-one-check-the-ocaml-version-one-is-using/4705
