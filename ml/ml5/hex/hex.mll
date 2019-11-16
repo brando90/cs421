@@ -87,17 +87,16 @@ rule token = parse
 
 and string_detect collect = parse
   | '\"' { STRING collect }
-  | '\\'|'\''|'\"'|'\t'|'\n'|'\r'|'\b'|' ' as c { string_detect (collect^(String.make 1 c)) lexbuf }
-  | "\\\"" { string_detect (collect^"\"") lexbuf }
+  | '\''|'\"'|'\t'|'\n'|'\r'|'\b'|' ' as c { string_detect (collect^(String.make 1 c)) lexbuf }
   | "," as c { string_detect (collect^String.make 1 c) lexbuf }
   | (alphanum | "_")* as s { string_detect (collect^s) lexbuf}
+  | "\\\"" { string_detect (collect^"\"") lexbuf }
+  | '\\' { escape_char (collect^String.make 1 '\\') lexbuf }
 
-  | ("\\")['0' - '2']['0' - '5']['0' - '5'] as s { string_detect ( collect ^ "ABC" ) lexbuf }
-
-  (* | ("\\")['0' - '2']['0' - '5']['0' - '5'] as c { string_detect ( collect ^ (char_of_int (int_of_string (String.make 1 c) ) ) ) lexbuf } *)
-  (* | ("\\")['0' - '2']['0' - '5']['0' - '5'] as s { let int_c=(int_of_string s) in let char_c =(char_of_int int_c) in string_detect ( collect ^"ABC" ) lexbuf } *)
-
-  (* | ("\\")['0' - '2']['0' - '5']['0' - '5'] as s { let int_c=(int_of_string s) in let char_c =(char_of_int int_c) in string_detect ( collect ^(String.make 1 char_c) ) lexbuf } *)
+and escape_char collect = parse
+  (* | '\"' { string_detect (collect^String.make 1 '\"') lexbuf } *)
+  (* | ['0' - '1']['0' - '5']['0' - '5'] as s { let int_c=(int_of_string s) in let char_c =(char_of_int int_c) in string_detect ( collect ^(String.make 1 char_c) ) lexbuf } *)
+  | ['0' - '1']['0' - '5']['0' - '5'] as s { string_detect collect^s lexbuf }
 
 {(* do not modify this function:
 
@@ -107,7 +106,8 @@ empty string test:
 get_all_tokens " \"\" ";;
 
 special char:
-get_all_tokens " \" \\\" \" ";;
+get_all_tokens " \"  \" ";;
+get_all_tokens " \" \\\" \" ";; -> get_all_tokens " \" \" \" ";;
 
 get_all_tokens " \" \\ \" ";;
 get_all_tokens " \"\t\r\" ";;
