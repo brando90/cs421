@@ -49,28 +49,39 @@ let rec gather_exp_ty_substitution gamma exp tau =
             )
       | LetInExp (x, e1, e2) ->
         let tau1 = fresh () in (* create fresh type variable for e1 to be infered later *)
-        some_proof_sigma_e1 = gather_exp_ty_substitution gamma e1 tau1
+        let some_proof_sigma_e1 = gather_exp_ty_substitution gamma e1 tau1 in
         (
           match some_proof_sigma_e1 with
             | None -> None
-            | Some (proof_e1,sigma_e1) ->
-              (* get tau_x *)
-              let sigma1_gamma = env_lift_subst sigma_e1 gamma in
-              let sigma1_tau1 = monoTy_lift_subst sigma_e1 tau1 in
-              let tau_x = gen sigma1_gamma sigma1_tau1 in
-              (* get gamma_e *)
-              let gamma_e = ins_env sigma1_gamma x tau_x in
-              (* get sigma_e2 *)
-              let sigma1_tau = monoTy_lift_subst sigma_e1 tau in
-              let some_proof_sigma_e2 = gather_exp_ty_substitution gamma_e e2
+            | Some proof_sigma_e1 ->
               (
-                match some_proof_sigma_e2 in
-                  | None -> None
-                  | Some (proof_e2, sigma_e2) ->
-                    let sigma2_sigma1 = subst_compose sigma_e2 sigma_e1 in
-                    Some( Proof([proof_e1;proof_e2], judgement), sigma2_sigma1)
+                match proof_sigma_e1 with
+                  | (proof_e1,sigma_e1) ->
+                    (* Some( Proof([proof_e1], judgment), sigma_e1) *)
+                    (* get tau_x *)
+                    let sigma1_gamma = env_lift_subst sigma_e1 gamma in
+                    let sigma1_tau1 = monoTy_lift_subst sigma_e1 tau1 in
+                    let tau_x = gen sigma1_gamma sigma1_tau1 in
+                    (* get gamma_e *)
+                    let gamma_e = ins_env sigma1_gamma x tau_x in
+                    (* get sigma_e2 *)
+                    let sigma1_tau = monoTy_lift_subst sigma_e1 tau in
+                    let some_proof_sigma_e2 = gather_exp_ty_substitution gamma_e e2 sigma1_tau in
+                    (* Some( Proof([proof_e1], judgment), sigma_e1) *)
+                     (
+                       match some_proof_sigma_e2 with
+                        | None -> None
+                        | Some proof_sigma_e2 ->
+                          (* Some( Proof([proof_e1], judgment), sigma_e1) *)
+                        (
+                          match proof_sigma_e2 with
+                            | proof_e2, sigma_e2 ->
+                              (* Some( Proof([proof_e1], judgment), sigma_e1) *)
+                              let sigma2_sigma1 = subst_compose sigma_e2 sigma_e1 in
+                              Some( Proof([proof_e1;proof_e2], judgment), sigma2_sigma1)
+                          )
+                    )
                 )
-
           )
       | TryWithExp (e, intopt1, e1, match_list) ->
             gather_exp_ty_substitution_TryWithExp (e, intopt1, e1, match_list) gamma tau gather_exp_ty_substitution
