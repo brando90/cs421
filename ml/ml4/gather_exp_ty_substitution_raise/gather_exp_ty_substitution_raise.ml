@@ -13,7 +13,18 @@ let rec gather_exp_ty_substitution gamma exp tau =
          (match unify [(tau, freshInstance tau')] with
              | None       -> None
              | Some sigma -> Some(Proof([],judgment), sigma))
-      | VarExp x -> gather_exp_ty_substitution_VarExp x gamma tau gather_exp_ty_substitution
+      | VarExp x ->
+        let some_tau_gamma_x = lookup_env gamma x in
+        (
+          match some_tau_gamma_x with
+            | None -> None
+            | Some tau_gamma_x ->
+            let tau_x = freshInstance (tau_gamma_x) in
+              (match unify [(tau, tau_x)] with
+                | None -> None
+                | Some sigma -> Some( Proof([], judgment), sigma )
+                )
+          )
       | MonOpAppExp (monop, e1) ->
           let tau1 = fresh () in (* create fresh type variable for e1 to be infered later *)
           let some_proof_sigma_e1 = gather_exp_ty_substitution gamma e1 tau1 in (* some_sigma = Gamma |- e1: tau1 *)
@@ -34,7 +45,44 @@ let rec gather_exp_ty_substitution gamma exp tau =
                     )
                 )
             )
-      | IfExp (e1, e2, e3) -> gather_exp_ty_substitution_IfExp (e1, e2, e3) gamma tau gather_exp_ty_substitution
+      | IfExp (e1, e2, e3) ->
+        let some_proof_sigma_e1 = gather_exp_ty_substitution gamma e1 bool_ty in
+        (
+          match some_proof_sigma_e1 with
+            | None -> None
+            | Some proof_sigma_e1 ->
+              (
+                match proof_sigma_e1 with
+                  | (proof1,sigma1) ->
+                    let sigma1_gamma = env_lift_subst sigma1 gamma in
+                    let sigma1_tau = monoTy_lift_subst sigma1 tau in
+                    let some_proof_sigma_e2 = gather_exp_ty_substitution sigma1_gamma e2 sigma1_tau in
+                    (
+                      match some_proof_sigma_e2 with
+                        | None -> None
+                        | Some proof_sigma_e2 ->
+                        (
+                          match proof_sigma_e2 with
+                            | (proof2,sigma2) ->
+                              let sigma2_sigma1 = subst_compose sigma2 sigma1 in
+                              let sigma2_sigma1_gamma = env_lift_subst sigma2_sigma1 gamma in
+                              let sigma2_sigma1_tau = monoTy_lift_subst sigma2_sigma1 tau in
+                              let some_proof_sigma_e3 = gather_exp_ty_substitution sigma2_sigma1_gamma e3 sigma2_sigma1_tau in
+                              (
+                                match some_proof_sigma_e3 with
+                                  | None -> None
+                                  | Some proof_sigma_e3 ->
+                                  (
+                                    match proof_sigma_e3 with
+                                      | (proof3,sigma3) ->
+                                        let sigma_if_exp = subst_compose sigma3 sigma2_sigma1 in
+                                        Some( Proof([proof1;proof2;proof3], judgment), sigma_if_exp)
+                                    )
+                                )
+                          )
+                      )
+                )
+          )
       | FunExp (x, e) ->
         (* create gamma_e *)
         let tau1 = fresh () in
