@@ -35,7 +35,34 @@ let rec gather_exp_ty_substitution gamma exp tau =
                 )
             )
       | IfExp (e1, e2, e3) -> gather_exp_ty_substitution_IfExp (e1, e2, e3) gamma tau gather_exp_ty_substitution
-      | FunExp (x, e) -> gather_exp_ty_substitution_FunExp (x, e) gamma tau gather_exp_ty_substitution
+      | FunExp (x, e) ->
+        (* create gamma_e *)
+        let tau1 = fresh () in
+        let gamma_e = ins_env gamma x (polyTy_of_monoTy tau1) in
+        (* sigma *)
+        let tau2 = fresh () in
+        let some_proof_sigma = gather_exp_ty_substitution gamma_e e tau2 in
+        (
+          match some_proof_sigma with
+            | None -> None
+            | Some proof_sigma ->
+            (
+              match proof_sigma with
+                | (proof, sigma) ->
+                  (* return value *)
+                  let sigma_tau = monoTy_lift_subst sigma tau in
+                  let tau1_to_tau2 = mk_fun_ty tau1 tau2 in
+                  let sigma_tau1_to_tau2 = monoTy_lift_subst sigma tau1_to_tau2 in
+                  let some_unified_guess_with_fun_ty = unify [(sigma_tau, sigma_tau1_to_tau2)] in
+                  (
+                    match some_unified_guess_with_fun_ty with
+                      | None -> None
+                      | Some sigma' ->
+                        let sigma_fun = subst_compose sigma' sigma in
+                        Some( Proof([proof], judgment), sigma_fun)
+                    )
+              )
+          )
       | BinOpAppExp (binop, e1, e2)->
             gather_exp_ty_substitution_BinOpAppExp (binop, e1, e2) gamma tau gather_exp_ty_substitution
       | AppExp (e1, e2) -> gather_exp_ty_substitution_AppExp (e1, e2) gamma tau gather_exp_ty_substitution
