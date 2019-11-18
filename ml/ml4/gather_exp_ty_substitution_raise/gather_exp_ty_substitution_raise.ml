@@ -112,8 +112,70 @@ let rec gather_exp_ty_substitution gamma exp tau =
               )
           )
       | BinOpAppExp (binop, e1, e2)->
-            gather_exp_ty_substitution_BinOpAppExp (binop, e1, e2) gamma tau gather_exp_ty_substitution
-      | AppExp (e1, e2) -> gather_exp_ty_substitution_AppExp (e1, e2) gamma tau gather_exp_ty_substitution
+            let tau1 = fresh () in
+            let some_proof_sigma_e1 = gather_exp_ty_substitution gamma e1 tau1 in
+            (
+              match some_proof_sigma_e1 with
+                | None -> None
+                | Some proof_sigma_e1 ->
+                (
+                  match proof_sigma_e1 with
+                    | (proof1,sigma1) ->
+                      let sigma1_gamma = env_lift_subst sigma1 gamma in
+                      let tau2 = fresh () in
+                      let some_proof_sigma_e2 = gather_exp_ty_substitution sigma1_gamma e2 tau2 in
+                      (
+                        match some_proof_sigma_e2 with
+                          | None -> None
+                          | Some proof_sigma_e2 ->
+                          (
+                            match proof_sigma_e2 with
+                              | (proof2,sigma2) ->
+                                let tau' = binop_signature binop in
+                                let tau' = freshInstance tau' in
+                                let sigma2_sigma1 = subst_compose sigma2 sigma1 in
+                                let tau2_to_tau = mk_fun_ty tau2 tau in
+                                let tau1_to_tau2_to_tau = mk_fun_ty tau1 tau2_to_tau in
+                                let s2_s1_t1_t2_t = monoTy_lift_subst sigma2_sigma1 tau1_to_tau2_to_tau in
+                                let some_unified = unify [(s2_s1_t1_t2_t, tau')] in
+                                (
+                                  match some_unified with
+                                    | None -> None
+                                    | Some unified_sigma ->
+                                    let unisigma_sigma2_sigma1 = subst_compose unified_sigma sigma2_sigma1 in
+                                    Some( Proof([proof1;proof2], judgment), unisigma_sigma2_sigma1)
+                                  )
+                            )
+                        )
+                  )
+              )
+      | AppExp (e1, e2) ->
+        let tau1 = fresh () in
+        let tau1_to_tau = mk_fun_ty tau1 tau in
+        let some_proof_sigma_e1 = gather_exp_ty_substitution gamma e1 tau1_to_tau in
+          (
+            match some_proof_sigma_e1 with
+              | None -> None
+              | Some proof_sigma_e1 ->
+                (
+                  match proof_sigma_e1 with
+                    | (proof1,sigma1) ->
+                      let sigma1_gamma = env_lift_subst sigma1 gamma in
+                      let sigma1_tau1 = monoTy_lift_subst sigma1 tau1 in
+                      let some_proof_sigma_e2 = gather_exp_ty_substitution sigma1_gamma e2 sigma1_tau1 in
+                      (
+                        match some_proof_sigma_e2 with
+                          | None -> None
+                          | Some proof_sigma_e2 ->
+                          (
+                            match proof_sigma_e2 with
+                              | (proof2,sigma2) ->
+                                let sigma2_sigma1 = subst_compose sigma2 sigma1 in
+                                Some( Proof([proof1;proof2],judgment), sigma2_sigma1)
+                            )
+                        )
+                  )
+            )
       | RaiseExp e ->
         let some_proof_sigma_e = gather_exp_ty_substitution gamma e int_ty in
           (match some_proof_sigma_e with
@@ -161,7 +223,40 @@ let rec gather_exp_ty_substitution gamma exp tau =
       | TryWithExp (e, intopt1, e1, match_list) ->
             gather_exp_ty_substitution_TryWithExp (e, intopt1, e1, match_list) gamma tau gather_exp_ty_substitution
       | LetRecInExp (f, x, e1, e2) ->
-            gather_exp_ty_substitution_LetRecInExp (f, x, e1, e2) gamma tau gather_exp_ty_substitution
+            (* gather_exp_ty_substitution_LetRecInExp (f, x, e1, e2) gamma tau gather_exp_ty_substitution *)
+            let tau1 = fresh () in
+            let tau2 = fresh () in
+            let gamma' = ins_env gamma x (polyTy_of_monoTy tau1) in
+            let tau1_to_tau2 = mk_fun_ty tau1 tau2 in
+            let gamma' = ins_env gamma' f (polyTy_of_monoTy tau1_to_tau2) in
+            let some_proof_sigma_e1 = gather_exp_ty_substitution gamma' e1 tau2 in
+              (
+                match some_proof_sigma_e1 with
+                  | None -> None
+                  | Some proof_sigma_e1 ->
+                    (
+                      match proof_sigma_e1 with
+                        | (proof1,sigma1) ->
+                          let sigma1_gamma = env_lift_subst sigma1 gamma in
+                          let sigma1_tau1_to_tau2 = monoTy_lift_subst sigma1 tau1_to_tau2 in
+                          let gen_ty = gen sigma1_gamma sigma1_tau1_to_tau2 in
+                          let gamma'' = ins_env sigma1_gamma f gen_ty in
+                          let sigma1_tau = monoTy_lift_subst sigma1 tau in
+                          let some_proof_sigma_e2 = gather_exp_ty_substitution gamma'' e2 sigma1_tau in
+                          (
+                            match some_proof_sigma_e2 with
+                              | None -> None
+                              | Some proof_sigma_e2 ->
+                              (
+                                match proof_sigma_e2 with
+                                  | (proof2,sigma2) ->
+                                    let sigma2_sigma1 = subst_compose sigma2 sigma1 in
+                                    Some( Proof([proof1;proof2], judgment), sigma2_sigma1)
+                                )
+                            )
+                      )
+                )
+
 
 
 
