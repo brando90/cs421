@@ -1,0 +1,102 @@
+let rubric_version = "1.0"
+let rubric_title = "Working with ADTs, CPS Transformation, Free Variables, app"
+
+(**************************************************************************
+ * You can add new test cases by adding new elements to the following lists
+ * Format is:
+ * TEST<X>ARG(<weight>, <function_name>, <arg1>, <arg2>, ..., <argX>)
+ *
+ * <X> is the number of argument that the function being tested takes.
+ **************************************************************************)
+open Common
+
+(* ====== Specific normalize versions of our code and the students code =====*)
+let freeVarsInExp_stu e = Common.mergesort (Student.freeVarsInExp e)
+let freeVarsInExp_sol e = Common.mergesort (Solution.freeVarsInExp e)
+
+(*
+let cps_exp_stu e k =
+    let ec = Student.cps_exp e k
+    in Common.exp_cps_normalize ec (Solution.freeVarsInExp e) 
+let cps_exp_sol e k =
+    let ec = Solution.cps_exp e k
+    in Common.exp_cps_normalize ec (Solution.freeVarsInExp e)
+*)
+
+(*=========================Some complex test values=======================*)
+let ackermann =
+LetRecInExp("a", "b",
+ IfExp(BinOpAppExp(GreaterOp,VarExp "b", ConstExp(IntConst 1)),
+   LetInExp("c", AppExp(VarExp "a",
+                       BinOpAppExp(IntMinusOp, VarExp "b", ConstExp(IntConst 1))),
+            LetInExp("d", AppExp(VarExp "a",
+                                 BinOpAppExp(IntMinusOp, VarExp "b", ConstExp(IntConst 2))),
+                     BinOpAppExp(IntPlusOp, VarExp "c", VarExp "d"))),
+   ConstExp(IntConst 1)),
+   AppExp(VarExp "a", ConstExp(IntConst 12)))
+
+let e =
+LetRecInExp("a","b",FunExp("i",IfExp(BinOpAppExp(EqOp,VarExp "i", ConstExp(IntConst 0)),
+    ConstExp(BoolConst true),
+    AppExp(VarExp "b", BinOpAppExp(IntMinusOp,VarExp "i", ConstExp(IntConst 1))))),
+    LetRecInExp("b","i", IfExp(BinOpAppExp(EqOp,VarExp "i", ConstExp(IntConst 0)),
+    ConstExp(BoolConst false),
+    AppExp(AppExp(VarExp "a", VarExp "b"),
+          BinOpAppExp(IntMinusOp,VarExp "i", ConstExp(IntConst 1)))),
+    VarExp "b"))
+
+let k0 = ContVarCPS Kvar
+let k1 = FnContCPS ("a", FunCPS(ContVarCPS Kvar, "b", Kvar,
+                  AppCPS(ContVarCPS Kvar, "a", "b")))
+let k2 = FnContCPS ("b", FunCPS(ContVarCPS Kvar, "b", Kvar,
+                  AppCPS(ContVarCPS Kvar, "a", "b")))
+
+
+(* This list is for regular problems *)
+let rubric =
+[
+(*
+  TEST1ARG(1, freeVarsInExp, (VarExp "x"));
+  TEST1ARG(1, freeVarsInExp, (ConstExp NilConst));
+
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu, (IfExp(VarExp "a",VarExp "b",VarExp "c")));
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu, (IfExp(AppExp(VarExp "a",VarExp "b"),VarExp "c",VarExp "f")))
+
+  TEST1ARG(1, freeVarsInExp, (MonOpAppExp (TlOp, VarExp "v")));
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu, (MonOpAppExp (IntNegOp, BinOpAppExp (ConcatOp, VarExp "fg", VarExp "yz"))));
+
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu, (BinOpAppExp (CommaOp, VarExp "v", VarExp "dv")));
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu, (BinOpAppExp (ConsOp, MonOpAppExp (TlOp, VarExp "v"), MonOpAppExp (TlOp, VarExp "w"))))
+*)
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu, (AppExp(VarExp "d",VarExp "e")));
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu, (AppExp(VarExp "d",IfExp(BinOpAppExp(GreaterOp, VarExp "silly", ConstExp (BoolConst true)), VarExp "x", VarExp "y"))))
+(*
+
+  TEST1ARG(1, freeVarsInExp, (FunExp("x", VarExp "x")));
+  TEST1ARG(1, freeVarsInExp, (FunExp("x", VarExp "y")));
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu, (AppExp(FunExp("x", FunExp("z",AppExp(VarExp "y", VarExp "z"))), VarExp "x")));
+
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu, (LetInExp("x", VarExp "y", VarExp "x")));
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu, (LetInExp("x", VarExp "x", VarExp "x")));
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu, (LetInExp("x", VarExp "y", VarExp "y")));
+
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu,
+                  (LetRecInExp("f","x",AppExp(VarExp "f",VarExp "x"),
+                               AppExp(VarExp "f",VarExp "y"))));
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu,
+                  (LetRecInExp("f","x",AppExp(VarExp "f",VarExp "x"),
+                               AppExp(VarExp "f",VarExp "x"))));
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu,
+                  LetRecInExp ("f", "x", BinOpAppExp(IntPlusOp, VarExp "x",
+                                         AppExp(VarExp  "f", VarExp "y")),
+                  AppExp(VarExp  "f", ConstExp(IntConst 0))));
+  TEST1ARG_TWOFUN(1, freeVarsInExp_sol, freeVarsInExp_stu,
+                  LetRecInExp ("f", "x", BinOpAppExp(IntPlusOp, VarExp "x",
+                                         AppExp(VarExp  "f", VarExp "y")),
+                  AppExp(VarExp  "g", ConstExp(IntConst 0))));
+                  *)
+]
+
+
+let extra_rubric = [ 
+]
