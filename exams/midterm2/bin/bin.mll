@@ -96,7 +96,7 @@ and get_stuff_after_backslash accumulator = parse
       let s=String.make 1 c in
       get_str (accumulator^s) lexbuf
     }
-  | ['\\' '\'' '\"' '\t' '\n' '\r' '\b' ' '] as c { let s=(String.make 1 c) in get_str (s^accumulator) lexbuf }
+  | ['\\' '\'' '\"' '\t' '\n' '\r' '\b' ' '] as c { let s=(String .make 1 c) in get_str (s^accumulator) lexbuf }
 
 (*
 get_all_tokens "\" \"";;

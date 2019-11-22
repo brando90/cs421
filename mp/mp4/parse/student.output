@@ -1,0 +1,325 @@
+   0  $accept : %entry% $end
+
+   1  main : expression DSEMI
+   2       | LET IDENT EQUALS expression DSEMI
+   3       | LET REC IDENT IDENT EQUALS expression DSEMI
+
+   4  expression : atomic_expression
+   5             | LPAREN RPAREN
+   6             | LPAREN expression RPAREN
+   7             | LPAREN expression COMMA expression RPAREN
+
+   8  pat : UNDERSCORE
+   9      | INT
+
+  10  atomic_expression : IDENT
+  11                    | my_const
+
+  12  my_const : TRUE
+  13           | FALSE
+  14           | INT
+  15           | FLOAT
+  16           | STRING
+  17           | NIL
+  18           | UNIT
+
+  19  %entry% : '\001' main
+
+state 0
+	$accept : . %entry% $end  (0)
+
+	'\001'  shift 1
+	.  error
+
+	%entry%  goto 2
+
+
+state 1
+	%entry% : '\001' . main  (19)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LET  shift 10
+	LPAREN  shift 11
+	UNIT  shift 12
+	.  error
+
+	main  goto 13
+	expression  goto 14
+	atomic_expression  goto 15
+	my_const  goto 16
+
+
+state 2
+	$accept : %entry% . $end  (0)
+
+	$end  accept
+
+
+state 3
+	my_const : INT .  (14)
+
+	.  reduce 14
+
+
+state 4
+	my_const : FLOAT .  (15)
+
+	.  reduce 15
+
+
+state 5
+	my_const : STRING .  (16)
+
+	.  reduce 16
+
+
+state 6
+	atomic_expression : IDENT .  (10)
+
+	.  reduce 10
+
+
+state 7
+	my_const : TRUE .  (12)
+
+	.  reduce 12
+
+
+state 8
+	my_const : FALSE .  (13)
+
+	.  reduce 13
+
+
+state 9
+	my_const : NIL .  (17)
+
+	.  reduce 17
+
+
+state 10
+	main : LET . IDENT EQUALS expression DSEMI  (2)
+	main : LET . REC IDENT IDENT EQUALS expression DSEMI  (3)
+
+	IDENT  shift 17
+	REC  shift 18
+	.  error
+
+
+state 11
+	expression : LPAREN . RPAREN  (5)
+	expression : LPAREN . expression RPAREN  (6)
+	expression : LPAREN . expression COMMA expression RPAREN  (7)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LPAREN  shift 11
+	RPAREN  shift 19
+	UNIT  shift 12
+	.  error
+
+	expression  goto 20
+	atomic_expression  goto 15
+	my_const  goto 16
+
+
+state 12
+	my_const : UNIT .  (18)
+
+	.  reduce 18
+
+
+state 13
+	%entry% : '\001' main .  (19)
+
+	.  reduce 19
+
+
+state 14
+	main : expression . DSEMI  (1)
+
+	DSEMI  shift 21
+	.  error
+
+
+state 15
+	expression : atomic_expression .  (4)
+
+	.  reduce 4
+
+
+state 16
+	atomic_expression : my_const .  (11)
+
+	.  reduce 11
+
+
+state 17
+	main : LET IDENT . EQUALS expression DSEMI  (2)
+
+	EQUALS  shift 22
+	.  error
+
+
+state 18
+	main : LET REC . IDENT IDENT EQUALS expression DSEMI  (3)
+
+	IDENT  shift 23
+	.  error
+
+
+state 19
+	expression : LPAREN RPAREN .  (5)
+
+	.  reduce 5
+
+
+state 20
+	expression : LPAREN expression . RPAREN  (6)
+	expression : LPAREN expression . COMMA expression RPAREN  (7)
+
+	RPAREN  shift 24
+	COMMA  shift 25
+	.  error
+
+
+state 21
+	main : expression DSEMI .  (1)
+
+	.  reduce 1
+
+
+state 22
+	main : LET IDENT EQUALS . expression DSEMI  (2)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LPAREN  shift 11
+	UNIT  shift 12
+	.  error
+
+	expression  goto 26
+	atomic_expression  goto 15
+	my_const  goto 16
+
+
+state 23
+	main : LET REC IDENT . IDENT EQUALS expression DSEMI  (3)
+
+	IDENT  shift 27
+	.  error
+
+
+state 24
+	expression : LPAREN expression RPAREN .  (6)
+
+	.  reduce 6
+
+
+state 25
+	expression : LPAREN expression COMMA . expression RPAREN  (7)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LPAREN  shift 11
+	UNIT  shift 12
+	.  error
+
+	expression  goto 28
+	atomic_expression  goto 15
+	my_const  goto 16
+
+
+state 26
+	main : LET IDENT EQUALS expression . DSEMI  (2)
+
+	DSEMI  shift 29
+	.  error
+
+
+state 27
+	main : LET REC IDENT IDENT . EQUALS expression DSEMI  (3)
+
+	EQUALS  shift 30
+	.  error
+
+
+state 28
+	expression : LPAREN expression COMMA expression . RPAREN  (7)
+
+	RPAREN  shift 31
+	.  error
+
+
+state 29
+	main : LET IDENT EQUALS expression DSEMI .  (2)
+
+	.  reduce 2
+
+
+state 30
+	main : LET REC IDENT IDENT EQUALS . expression DSEMI  (3)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LPAREN  shift 11
+	UNIT  shift 12
+	.  error
+
+	expression  goto 32
+	atomic_expression  goto 15
+	my_const  goto 16
+
+
+state 31
+	expression : LPAREN expression COMMA expression RPAREN .  (7)
+
+	.  reduce 7
+
+
+state 32
+	main : LET REC IDENT IDENT EQUALS expression . DSEMI  (3)
+
+	DSEMI  shift 33
+	.  error
+
+
+state 33
+	main : LET REC IDENT IDENT EQUALS expression DSEMI .  (3)
+
+	.  reduce 3
+
+
+Rules never reduced:
+	pat : UNDERSCORE  (8)
+	pat : INT  (9)
+
+
+60 terminals, 7 nonterminals
+20 grammar rules, 34 states
