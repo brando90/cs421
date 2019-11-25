@@ -4,26 +4,87 @@
    2       | LET IDENT EQUALS expression DSEMI
    3       | LET REC IDENT IDENT EQUALS expression DSEMI
 
-   4  expression : atomic_expression
-   5             | LPAREN RPAREN
-   6             | LPAREN expression RPAREN
-   7             | LPAREN expression COMMA expression RPAREN
+   4  expression : LPAREN expression COMMA expression RPAREN
+   5             | letrecin_14_prec
 
-   8  pat : UNDERSCORE
-   9      | INT
+   6  letrecin_14_prec : LET REC var var EQUALS letrecin_14_prec IN letrecin_14_prec
+   7                   | letin_13_prec
 
-  10  atomic_expression : IDENT
-  11                    | my_const
+   8  letin_13_prec : LET var EQUALS letin_13_prec IN letin_13_prec
+   9                | fun_12_prec
 
-  12  my_const : TRUE
-  13           | FALSE
-  14           | INT
-  15           | FLOAT
-  16           | STRING
-  17           | NIL
-  18           | UNIT
+  10  fun_12_prec : FUN var ARROW fun_12_prec
+  11              | ifthenelse_11th_prec
 
-  19  %entry% : '\001' main
+  12  ifthenelse_11th_prec : IF ifthenelse_11th_prec THEN ifthenelse_11th_prec ELSE ifthenelse_11th_prec
+  13                       | or_10th_highest_prec
+
+  14  or_10th_highest_prec : or_10th_highest_prec LOGICALOR and_9th_highest_prec
+  15                       | and_9th_highest_prec
+
+  16  and_9th_highest_prec : and_9th_highest_prec LOGICALAND logical_8th_highest_prec
+  17                       | logical_8th_highest_prec
+
+  18  logical_8th_highest_prec : logical_8th_highest_prec EQUALS cons_7th_highest_prec
+  19                           | logical_8th_highest_prec LT cons_7th_highest_prec
+  20                           | logical_8th_highest_prec GT cons_7th_highest_prec
+  21                           | logical_8th_highest_prec LEQ cons_7th_highest_prec
+  22                           | logical_8th_highest_prec GEQ cons_7th_highest_prec
+  23                           | logical_8th_highest_prec NEQ cons_7th_highest_prec
+  24                           | cons_7th_highest_prec
+
+  25  cons_7th_highest_prec : arith_ops_low_prec_6th_highest_prec DCOLON cons_7th_highest_prec
+  26                        | arith_ops_low_prec_6th_highest_prec
+
+  27  arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec PLUS arith_ops_high_prec_5th_highest_prec
+  28                                      | arith_ops_low_prec_6th_highest_prec DPLUS arith_ops_high_prec_5th_highest_prec
+  29                                      | arith_ops_low_prec_6th_highest_prec MINUS arith_ops_high_prec_5th_highest_prec
+  30                                      | arith_ops_low_prec_6th_highest_prec DMINUS arith_ops_high_prec_5th_highest_prec
+  31                                      | arith_ops_low_prec_6th_highest_prec CARAT arith_ops_high_prec_5th_highest_prec
+  32                                      | arith_ops_high_prec_5th_highest_prec
+
+  33  arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec TIMES exponentiation_4th_highest_prec
+  34                                       | arith_ops_high_prec_5th_highest_prec DTIMES exponentiation_4th_highest_prec
+  35                                       | arith_ops_high_prec_5th_highest_prec DIV exponentiation_4th_highest_prec
+  36                                       | arith_ops_high_prec_5th_highest_prec DDIV exponentiation_4th_highest_prec
+  37                                       | arith_ops_high_prec_5th_highest_prec MOD exponentiation_4th_highest_prec
+  38                                       | exponentiation_4th_highest_prec
+
+  39  exponentiation_4th_highest_prec : raise_3rd_highest_prec EXP exponentiation_4th_highest_prec
+  40                                  | raise_3rd_highest_prec
+
+  41  raise_3rd_highest_prec : RAISE raise_3rd_highest_prec
+  42                         | app_2nd_highest_prec
+
+  43  app_2nd_highest_prec : app_2nd_highest_prec highest_1st_prec
+  44                       | highest_1st_prec
+
+  45  highest_1st_prec : FST highest_1st_prec
+  46                   | SND highest_1st_prec
+  47                   | HEAD highest_1st_prec
+  48                   | TAIL highest_1st_prec
+  49                   | PRINT highest_1st_prec
+  50                   | atomic_expression
+
+  51  pat : UNDERSCORE
+  52      | INT
+
+  53  atomic_expression : IDENT
+  54                    | my_const
+  55                    | LPAREN expression RPAREN
+
+  56  var : var
+
+  57  my_const : TRUE
+  58           | FALSE
+  59           | INT
+  60           | FLOAT
+  61           | STRING
+  62           | NIL
+  63           | UNIT
+  64           | LPAREN RPAREN
+
+  65  %entry% : '\001' main
 
 state 0
 	$accept : . %entry% $end  (0)
@@ -35,7 +96,7 @@ state 0
 
 
 state 1
-	%entry% : '\001' . main  (19)
+	%entry% : '\001' . main  (65)
 
 	INT  shift 3
 	FLOAT  shift 4
@@ -45,14 +106,36 @@ state 1
 	FALSE  shift 8
 	NIL  shift 9
 	LET  shift 10
-	LPAREN  shift 11
-	UNIT  shift 12
+	IF  shift 11
+	FUN  shift 12
+	RAISE  shift 13
+	LPAREN  shift 14
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
 	.  error
 
-	main  goto 13
-	expression  goto 14
-	atomic_expression  goto 15
-	my_const  goto 16
+	main  goto 21
+	expression  goto 22
+	letrecin_14_prec  goto 23
+	letin_13_prec  goto 24
+	fun_12_prec  goto 25
+	ifthenelse_11th_prec  goto 26
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
 
 
 state 2
@@ -62,60 +145,62 @@ state 2
 
 
 state 3
-	my_const : INT .  (14)
+	my_const : INT .  (59)
 
-	.  reduce 14
+	.  reduce 59
 
 
 state 4
-	my_const : FLOAT .  (15)
+	my_const : FLOAT .  (60)
 
-	.  reduce 15
+	.  reduce 60
 
 
 state 5
-	my_const : STRING .  (16)
+	my_const : STRING .  (61)
 
-	.  reduce 16
+	.  reduce 61
 
 
 state 6
-	atomic_expression : IDENT .  (10)
+	atomic_expression : IDENT .  (53)
 
-	.  reduce 10
+	.  reduce 53
 
 
 state 7
-	my_const : TRUE .  (12)
+	my_const : TRUE .  (57)
 
-	.  reduce 12
+	.  reduce 57
 
 
 state 8
-	my_const : FALSE .  (13)
+	my_const : FALSE .  (58)
 
-	.  reduce 13
+	.  reduce 58
 
 
 state 9
-	my_const : NIL .  (17)
+	my_const : NIL .  (62)
 
-	.  reduce 17
+	.  reduce 62
 
 
 state 10
 	main : LET . IDENT EQUALS expression DSEMI  (2)
 	main : LET . REC IDENT IDENT EQUALS expression DSEMI  (3)
+	letrecin_14_prec : LET . REC var var EQUALS letrecin_14_prec IN letrecin_14_prec  (6)
+	letin_13_prec : LET . var EQUALS letin_13_prec IN letin_13_prec  (8)
 
-	IDENT  shift 17
-	REC  shift 18
+	IDENT  shift 39
+	REC  shift 40
 	.  error
+
+	var  goto 41
 
 
 state 11
-	expression : LPAREN . RPAREN  (5)
-	expression : LPAREN . expression RPAREN  (6)
-	expression : LPAREN . expression COMMA expression RPAREN  (7)
+	ifthenelse_11th_prec : IF . ifthenelse_11th_prec THEN ifthenelse_11th_prec ELSE ifthenelse_11th_prec  (12)
 
 	INT  shift 3
 	FLOAT  shift 4
@@ -124,83 +209,1257 @@ state 11
 	TRUE  shift 7
 	FALSE  shift 8
 	NIL  shift 9
-	LPAREN  shift 11
-	RPAREN  shift 19
-	UNIT  shift 12
+	IF  shift 11
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
 	.  error
 
-	expression  goto 20
-	atomic_expression  goto 15
-	my_const  goto 16
+	ifthenelse_11th_prec  goto 43
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
 
 
 state 12
-	my_const : UNIT .  (18)
+	fun_12_prec : FUN . var ARROW fun_12_prec  (10)
 
-	.  reduce 18
+
+	var  goto 44
 
 
 state 13
-	%entry% : '\001' main .  (19)
+	raise_3rd_highest_prec : RAISE . raise_3rd_highest_prec  (41)
 
-	.  reduce 19
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	raise_3rd_highest_prec  goto 45
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
 
 
 state 14
-	main : expression . DSEMI  (1)
+	expression : LPAREN . expression COMMA expression RPAREN  (4)
+	atomic_expression : LPAREN . expression RPAREN  (55)
+	my_const : LPAREN . RPAREN  (64)
 
-	DSEMI  shift 21
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LET  shift 46
+	IF  shift 11
+	FUN  shift 12
+	RAISE  shift 13
+	LPAREN  shift 14
+	RPAREN  shift 47
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
 	.  error
+
+	expression  goto 48
+	letrecin_14_prec  goto 23
+	letin_13_prec  goto 24
+	fun_12_prec  goto 25
+	ifthenelse_11th_prec  goto 26
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
 
 
 state 15
-	expression : atomic_expression .  (4)
+	my_const : UNIT .  (63)
 
-	.  reduce 4
+	.  reduce 63
 
 
 state 16
-	atomic_expression : my_const .  (11)
+	highest_1st_prec : HEAD . highest_1st_prec  (47)
 
-	.  reduce 11
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	highest_1st_prec  goto 49
+	atomic_expression  goto 37
+	my_const  goto 38
 
 
 state 17
-	main : LET IDENT . EQUALS expression DSEMI  (2)
+	highest_1st_prec : TAIL . highest_1st_prec  (48)
 
-	EQUALS  shift 22
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
 	.  error
+
+	highest_1st_prec  goto 50
+	atomic_expression  goto 37
+	my_const  goto 38
 
 
 state 18
-	main : LET REC . IDENT IDENT EQUALS expression DSEMI  (3)
+	highest_1st_prec : PRINT . highest_1st_prec  (49)
 
-	IDENT  shift 23
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
 	.  error
+
+	highest_1st_prec  goto 51
+	atomic_expression  goto 37
+	my_const  goto 38
 
 
 state 19
-	expression : LPAREN RPAREN .  (5)
+	highest_1st_prec : FST . highest_1st_prec  (45)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	highest_1st_prec  goto 52
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 20
+	highest_1st_prec : SND . highest_1st_prec  (46)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	highest_1st_prec  goto 53
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 21
+	%entry% : '\001' main .  (65)
+
+	.  reduce 65
+
+
+state 22
+	main : expression . DSEMI  (1)
+
+	DSEMI  shift 54
+	.  error
+
+
+state 23
+	expression : letrecin_14_prec .  (5)
 
 	.  reduce 5
 
 
-state 20
-	expression : LPAREN expression . RPAREN  (6)
-	expression : LPAREN expression . COMMA expression RPAREN  (7)
+state 24
+	letrecin_14_prec : letin_13_prec .  (7)
 
-	RPAREN  shift 24
-	COMMA  shift 25
+	.  reduce 7
+
+
+state 25
+	letin_13_prec : fun_12_prec .  (9)
+
+	.  reduce 9
+
+
+state 26
+	fun_12_prec : ifthenelse_11th_prec .  (11)
+
+	.  reduce 11
+
+
+state 27
+	ifthenelse_11th_prec : or_10th_highest_prec .  (13)
+	or_10th_highest_prec : or_10th_highest_prec . LOGICALOR and_9th_highest_prec  (14)
+
+	LOGICALOR  shift 55
+	DSEMI  reduce 13
+	IN  reduce 13
+	THEN  reduce 13
+	ELSE  reduce 13
+	RPAREN  reduce 13
+	COMMA  reduce 13
+
+
+state 28
+	or_10th_highest_prec : and_9th_highest_prec .  (15)
+	and_9th_highest_prec : and_9th_highest_prec . LOGICALAND logical_8th_highest_prec  (16)
+
+	LOGICALAND  shift 56
+	DSEMI  reduce 15
+	IN  reduce 15
+	THEN  reduce 15
+	ELSE  reduce 15
+	LOGICALOR  reduce 15
+	RPAREN  reduce 15
+	COMMA  reduce 15
+
+
+state 29
+	and_9th_highest_prec : logical_8th_highest_prec .  (17)
+	logical_8th_highest_prec : logical_8th_highest_prec . EQUALS cons_7th_highest_prec  (18)
+	logical_8th_highest_prec : logical_8th_highest_prec . LT cons_7th_highest_prec  (19)
+	logical_8th_highest_prec : logical_8th_highest_prec . GT cons_7th_highest_prec  (20)
+	logical_8th_highest_prec : logical_8th_highest_prec . LEQ cons_7th_highest_prec  (21)
+	logical_8th_highest_prec : logical_8th_highest_prec . GEQ cons_7th_highest_prec  (22)
+	logical_8th_highest_prec : logical_8th_highest_prec . NEQ cons_7th_highest_prec  (23)
+
+	LT  shift 57
+	GT  shift 58
+	LEQ  shift 59
+	GEQ  shift 60
+	EQUALS  shift 61
+	NEQ  shift 62
+	DSEMI  reduce 17
+	IN  reduce 17
+	THEN  reduce 17
+	ELSE  reduce 17
+	LOGICALAND  reduce 17
+	LOGICALOR  reduce 17
+	RPAREN  reduce 17
+	COMMA  reduce 17
+
+
+state 30
+	logical_8th_highest_prec : cons_7th_highest_prec .  (24)
+
+	.  reduce 24
+
+
+state 31
+	cons_7th_highest_prec : arith_ops_low_prec_6th_highest_prec . DCOLON cons_7th_highest_prec  (25)
+	cons_7th_highest_prec : arith_ops_low_prec_6th_highest_prec .  (26)
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec . PLUS arith_ops_high_prec_5th_highest_prec  (27)
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec . DPLUS arith_ops_high_prec_5th_highest_prec  (28)
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec . MINUS arith_ops_high_prec_5th_highest_prec  (29)
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec . DMINUS arith_ops_high_prec_5th_highest_prec  (30)
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec . CARAT arith_ops_high_prec_5th_highest_prec  (31)
+
+	PLUS  shift 63
+	MINUS  shift 64
+	DPLUS  shift 65
+	DMINUS  shift 66
+	CARAT  shift 67
+	DCOLON  shift 68
+	LT  reduce 26
+	GT  reduce 26
+	LEQ  reduce 26
+	GEQ  reduce 26
+	EQUALS  reduce 26
+	NEQ  reduce 26
+	DSEMI  reduce 26
+	IN  reduce 26
+	THEN  reduce 26
+	ELSE  reduce 26
+	LOGICALAND  reduce 26
+	LOGICALOR  reduce 26
+	RPAREN  reduce 26
+	COMMA  reduce 26
+
+
+state 32
+	arith_ops_low_prec_6th_highest_prec : arith_ops_high_prec_5th_highest_prec .  (32)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . TIMES exponentiation_4th_highest_prec  (33)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DTIMES exponentiation_4th_highest_prec  (34)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DIV exponentiation_4th_highest_prec  (35)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DDIV exponentiation_4th_highest_prec  (36)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . MOD exponentiation_4th_highest_prec  (37)
+
+	TIMES  shift 69
+	DIV  shift 70
+	DTIMES  shift 71
+	DDIV  shift 72
+	MOD  shift 73
+	PLUS  reduce 32
+	MINUS  reduce 32
+	DPLUS  reduce 32
+	DMINUS  reduce 32
+	CARAT  reduce 32
+	LT  reduce 32
+	GT  reduce 32
+	LEQ  reduce 32
+	GEQ  reduce 32
+	EQUALS  reduce 32
+	NEQ  reduce 32
+	DSEMI  reduce 32
+	DCOLON  reduce 32
+	IN  reduce 32
+	THEN  reduce 32
+	ELSE  reduce 32
+	LOGICALAND  reduce 32
+	LOGICALOR  reduce 32
+	RPAREN  reduce 32
+	COMMA  reduce 32
+
+
+state 33
+	arith_ops_high_prec_5th_highest_prec : exponentiation_4th_highest_prec .  (38)
+
+	.  reduce 38
+
+
+state 34
+	exponentiation_4th_highest_prec : raise_3rd_highest_prec . EXP exponentiation_4th_highest_prec  (39)
+	exponentiation_4th_highest_prec : raise_3rd_highest_prec .  (40)
+
+	EXP  shift 74
+	PLUS  reduce 40
+	MINUS  reduce 40
+	TIMES  reduce 40
+	DIV  reduce 40
+	DPLUS  reduce 40
+	DMINUS  reduce 40
+	DTIMES  reduce 40
+	DDIV  reduce 40
+	MOD  reduce 40
+	CARAT  reduce 40
+	LT  reduce 40
+	GT  reduce 40
+	LEQ  reduce 40
+	GEQ  reduce 40
+	EQUALS  reduce 40
+	NEQ  reduce 40
+	DSEMI  reduce 40
+	DCOLON  reduce 40
+	IN  reduce 40
+	THEN  reduce 40
+	ELSE  reduce 40
+	LOGICALAND  reduce 40
+	LOGICALOR  reduce 40
+	RPAREN  reduce 40
+	COMMA  reduce 40
+
+
+state 35
+	raise_3rd_highest_prec : app_2nd_highest_prec .  (42)
+	app_2nd_highest_prec : app_2nd_highest_prec . highest_1st_prec  (43)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	PLUS  reduce 42
+	MINUS  reduce 42
+	TIMES  reduce 42
+	DIV  reduce 42
+	DPLUS  reduce 42
+	DMINUS  reduce 42
+	DTIMES  reduce 42
+	DDIV  reduce 42
+	MOD  reduce 42
+	EXP  reduce 42
+	CARAT  reduce 42
+	LT  reduce 42
+	GT  reduce 42
+	LEQ  reduce 42
+	GEQ  reduce 42
+	EQUALS  reduce 42
+	NEQ  reduce 42
+	DSEMI  reduce 42
+	DCOLON  reduce 42
+	IN  reduce 42
+	THEN  reduce 42
+	ELSE  reduce 42
+	LOGICALAND  reduce 42
+	LOGICALOR  reduce 42
+	RPAREN  reduce 42
+	COMMA  reduce 42
+
+	highest_1st_prec  goto 75
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 36
+	app_2nd_highest_prec : highest_1st_prec .  (44)
+
+	.  reduce 44
+
+
+state 37
+	highest_1st_prec : atomic_expression .  (50)
+
+	.  reduce 50
+
+
+state 38
+	atomic_expression : my_const .  (54)
+
+	.  reduce 54
+
+
+state 39
+	main : LET IDENT . EQUALS expression DSEMI  (2)
+
+	EQUALS  shift 76
 	.  error
 
 
-state 21
+state 40
+	main : LET REC . IDENT IDENT EQUALS expression DSEMI  (3)
+	letrecin_14_prec : LET REC . var var EQUALS letrecin_14_prec IN letrecin_14_prec  (6)
+
+	IDENT  shift 77
+	.  error
+
+	var  goto 78
+
+
+41: shift/reduce conflict (shift 79, reduce 56) on EQUALS
+state 41
+	letin_13_prec : LET var . EQUALS letin_13_prec IN letin_13_prec  (8)
+	var : var .  (56)
+
+	EQUALS  shift 79
+
+
+state 42
+	atomic_expression : LPAREN . expression RPAREN  (55)
+	my_const : LPAREN . RPAREN  (64)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LET  shift 46
+	IF  shift 11
+	FUN  shift 12
+	RAISE  shift 13
+	LPAREN  shift 14
+	RPAREN  shift 47
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	expression  goto 80
+	letrecin_14_prec  goto 23
+	letin_13_prec  goto 24
+	fun_12_prec  goto 25
+	ifthenelse_11th_prec  goto 26
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 43
+	ifthenelse_11th_prec : IF ifthenelse_11th_prec . THEN ifthenelse_11th_prec ELSE ifthenelse_11th_prec  (12)
+
+	THEN  shift 81
+	.  error
+
+
+44: shift/reduce conflict (shift 82, reduce 56) on ARROW
+state 44
+	fun_12_prec : FUN var . ARROW fun_12_prec  (10)
+	var : var .  (56)
+
+	ARROW  shift 82
+
+
+state 45
+	raise_3rd_highest_prec : RAISE raise_3rd_highest_prec .  (41)
+
+	.  reduce 41
+
+
+state 46
+	letrecin_14_prec : LET . REC var var EQUALS letrecin_14_prec IN letrecin_14_prec  (6)
+	letin_13_prec : LET . var EQUALS letin_13_prec IN letin_13_prec  (8)
+
+	REC  shift 83
+	.  error
+
+	var  goto 41
+
+
+state 47
+	my_const : LPAREN RPAREN .  (64)
+
+	.  reduce 64
+
+
+state 48
+	expression : LPAREN expression . COMMA expression RPAREN  (4)
+	atomic_expression : LPAREN expression . RPAREN  (55)
+
+	RPAREN  shift 84
+	COMMA  shift 85
+	.  error
+
+
+state 49
+	highest_1st_prec : HEAD highest_1st_prec .  (47)
+
+	.  reduce 47
+
+
+state 50
+	highest_1st_prec : TAIL highest_1st_prec .  (48)
+
+	.  reduce 48
+
+
+state 51
+	highest_1st_prec : PRINT highest_1st_prec .  (49)
+
+	.  reduce 49
+
+
+state 52
+	highest_1st_prec : FST highest_1st_prec .  (45)
+
+	.  reduce 45
+
+
+state 53
+	highest_1st_prec : SND highest_1st_prec .  (46)
+
+	.  reduce 46
+
+
+state 54
 	main : expression DSEMI .  (1)
 
 	.  reduce 1
 
 
-state 22
+state 55
+	or_10th_highest_prec : or_10th_highest_prec LOGICALOR . and_9th_highest_prec  (14)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	and_9th_highest_prec  goto 86
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 56
+	and_9th_highest_prec : and_9th_highest_prec LOGICALAND . logical_8th_highest_prec  (16)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	logical_8th_highest_prec  goto 87
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 57
+	logical_8th_highest_prec : logical_8th_highest_prec LT . cons_7th_highest_prec  (19)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	cons_7th_highest_prec  goto 88
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 58
+	logical_8th_highest_prec : logical_8th_highest_prec GT . cons_7th_highest_prec  (20)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	cons_7th_highest_prec  goto 89
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 59
+	logical_8th_highest_prec : logical_8th_highest_prec LEQ . cons_7th_highest_prec  (21)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	cons_7th_highest_prec  goto 90
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 60
+	logical_8th_highest_prec : logical_8th_highest_prec GEQ . cons_7th_highest_prec  (22)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	cons_7th_highest_prec  goto 91
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 61
+	logical_8th_highest_prec : logical_8th_highest_prec EQUALS . cons_7th_highest_prec  (18)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	cons_7th_highest_prec  goto 92
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 62
+	logical_8th_highest_prec : logical_8th_highest_prec NEQ . cons_7th_highest_prec  (23)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	cons_7th_highest_prec  goto 93
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 63
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec PLUS . arith_ops_high_prec_5th_highest_prec  (27)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	arith_ops_high_prec_5th_highest_prec  goto 94
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 64
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec MINUS . arith_ops_high_prec_5th_highest_prec  (29)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	arith_ops_high_prec_5th_highest_prec  goto 95
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 65
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec DPLUS . arith_ops_high_prec_5th_highest_prec  (28)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	arith_ops_high_prec_5th_highest_prec  goto 96
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 66
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec DMINUS . arith_ops_high_prec_5th_highest_prec  (30)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	arith_ops_high_prec_5th_highest_prec  goto 97
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 67
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec CARAT . arith_ops_high_prec_5th_highest_prec  (31)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	arith_ops_high_prec_5th_highest_prec  goto 98
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 68
+	cons_7th_highest_prec : arith_ops_low_prec_6th_highest_prec DCOLON . cons_7th_highest_prec  (25)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	cons_7th_highest_prec  goto 99
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 69
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec TIMES . exponentiation_4th_highest_prec  (33)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	exponentiation_4th_highest_prec  goto 100
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 70
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec DIV . exponentiation_4th_highest_prec  (35)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	exponentiation_4th_highest_prec  goto 101
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 71
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec DTIMES . exponentiation_4th_highest_prec  (34)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	exponentiation_4th_highest_prec  goto 102
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 72
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec DDIV . exponentiation_4th_highest_prec  (36)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	exponentiation_4th_highest_prec  goto 103
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 73
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec MOD . exponentiation_4th_highest_prec  (37)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	exponentiation_4th_highest_prec  goto 104
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 74
+	exponentiation_4th_highest_prec : raise_3rd_highest_prec EXP . exponentiation_4th_highest_prec  (39)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	exponentiation_4th_highest_prec  goto 105
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 75
+	app_2nd_highest_prec : app_2nd_highest_prec highest_1st_prec .  (43)
+
+	.  reduce 43
+
+
+state 76
 	main : LET IDENT EQUALS . expression DSEMI  (2)
 
 	INT  shift 3
@@ -210,30 +1469,55 @@ state 22
 	TRUE  shift 7
 	FALSE  shift 8
 	NIL  shift 9
-	LPAREN  shift 11
-	UNIT  shift 12
+	LET  shift 46
+	IF  shift 11
+	FUN  shift 12
+	RAISE  shift 13
+	LPAREN  shift 14
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
 	.  error
 
-	expression  goto 26
-	atomic_expression  goto 15
-	my_const  goto 16
+	expression  goto 106
+	letrecin_14_prec  goto 23
+	letin_13_prec  goto 24
+	fun_12_prec  goto 25
+	ifthenelse_11th_prec  goto 26
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
 
 
-state 23
+state 77
 	main : LET REC IDENT . IDENT EQUALS expression DSEMI  (3)
 
-	IDENT  shift 27
+	IDENT  shift 107
 	.  error
 
 
-state 24
-	expression : LPAREN expression RPAREN .  (6)
+state 78
+	letrecin_14_prec : LET REC var . var EQUALS letrecin_14_prec IN letrecin_14_prec  (6)
+	var : var .  (56)
 
-	.  reduce 6
+
+	var  goto 108
 
 
-state 25
-	expression : LPAREN expression COMMA . expression RPAREN  (7)
+state 79
+	letin_13_prec : LET var EQUALS . letin_13_prec IN letin_13_prec  (8)
 
 	INT  shift 3
 	FLOAT  shift 4
@@ -242,43 +1526,527 @@ state 25
 	TRUE  shift 7
 	FALSE  shift 8
 	NIL  shift 9
-	LPAREN  shift 11
-	UNIT  shift 12
+	LET  shift 109
+	IF  shift 11
+	FUN  shift 12
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
 	.  error
 
-	expression  goto 28
-	atomic_expression  goto 15
-	my_const  goto 16
+	letin_13_prec  goto 110
+	fun_12_prec  goto 25
+	ifthenelse_11th_prec  goto 26
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
 
 
-state 26
+state 80
+	atomic_expression : LPAREN expression . RPAREN  (55)
+
+	RPAREN  shift 84
+	.  error
+
+
+state 81
+	ifthenelse_11th_prec : IF ifthenelse_11th_prec THEN . ifthenelse_11th_prec ELSE ifthenelse_11th_prec  (12)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	IF  shift 11
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	ifthenelse_11th_prec  goto 111
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 82
+	fun_12_prec : FUN var ARROW . fun_12_prec  (10)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	IF  shift 11
+	FUN  shift 12
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	fun_12_prec  goto 112
+	ifthenelse_11th_prec  goto 26
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 83
+	letrecin_14_prec : LET REC . var var EQUALS letrecin_14_prec IN letrecin_14_prec  (6)
+
+
+	var  goto 78
+
+
+state 84
+	atomic_expression : LPAREN expression RPAREN .  (55)
+
+	.  reduce 55
+
+
+state 85
+	expression : LPAREN expression COMMA . expression RPAREN  (4)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LET  shift 46
+	IF  shift 11
+	FUN  shift 12
+	RAISE  shift 13
+	LPAREN  shift 14
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	expression  goto 113
+	letrecin_14_prec  goto 23
+	letin_13_prec  goto 24
+	fun_12_prec  goto 25
+	ifthenelse_11th_prec  goto 26
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 86
+	or_10th_highest_prec : or_10th_highest_prec LOGICALOR and_9th_highest_prec .  (14)
+	and_9th_highest_prec : and_9th_highest_prec . LOGICALAND logical_8th_highest_prec  (16)
+
+	LOGICALAND  shift 56
+	DSEMI  reduce 14
+	IN  reduce 14
+	THEN  reduce 14
+	ELSE  reduce 14
+	LOGICALOR  reduce 14
+	RPAREN  reduce 14
+	COMMA  reduce 14
+
+
+state 87
+	and_9th_highest_prec : and_9th_highest_prec LOGICALAND logical_8th_highest_prec .  (16)
+	logical_8th_highest_prec : logical_8th_highest_prec . EQUALS cons_7th_highest_prec  (18)
+	logical_8th_highest_prec : logical_8th_highest_prec . LT cons_7th_highest_prec  (19)
+	logical_8th_highest_prec : logical_8th_highest_prec . GT cons_7th_highest_prec  (20)
+	logical_8th_highest_prec : logical_8th_highest_prec . LEQ cons_7th_highest_prec  (21)
+	logical_8th_highest_prec : logical_8th_highest_prec . GEQ cons_7th_highest_prec  (22)
+	logical_8th_highest_prec : logical_8th_highest_prec . NEQ cons_7th_highest_prec  (23)
+
+	LT  shift 57
+	GT  shift 58
+	LEQ  shift 59
+	GEQ  shift 60
+	EQUALS  shift 61
+	NEQ  shift 62
+	DSEMI  reduce 16
+	IN  reduce 16
+	THEN  reduce 16
+	ELSE  reduce 16
+	LOGICALAND  reduce 16
+	LOGICALOR  reduce 16
+	RPAREN  reduce 16
+	COMMA  reduce 16
+
+
+state 88
+	logical_8th_highest_prec : logical_8th_highest_prec LT cons_7th_highest_prec .  (19)
+
+	.  reduce 19
+
+
+state 89
+	logical_8th_highest_prec : logical_8th_highest_prec GT cons_7th_highest_prec .  (20)
+
+	.  reduce 20
+
+
+state 90
+	logical_8th_highest_prec : logical_8th_highest_prec LEQ cons_7th_highest_prec .  (21)
+
+	.  reduce 21
+
+
+state 91
+	logical_8th_highest_prec : logical_8th_highest_prec GEQ cons_7th_highest_prec .  (22)
+
+	.  reduce 22
+
+
+state 92
+	logical_8th_highest_prec : logical_8th_highest_prec EQUALS cons_7th_highest_prec .  (18)
+
+	.  reduce 18
+
+
+state 93
+	logical_8th_highest_prec : logical_8th_highest_prec NEQ cons_7th_highest_prec .  (23)
+
+	.  reduce 23
+
+
+state 94
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec PLUS arith_ops_high_prec_5th_highest_prec .  (27)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . TIMES exponentiation_4th_highest_prec  (33)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DTIMES exponentiation_4th_highest_prec  (34)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DIV exponentiation_4th_highest_prec  (35)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DDIV exponentiation_4th_highest_prec  (36)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . MOD exponentiation_4th_highest_prec  (37)
+
+	TIMES  shift 69
+	DIV  shift 70
+	DTIMES  shift 71
+	DDIV  shift 72
+	MOD  shift 73
+	PLUS  reduce 27
+	MINUS  reduce 27
+	DPLUS  reduce 27
+	DMINUS  reduce 27
+	CARAT  reduce 27
+	LT  reduce 27
+	GT  reduce 27
+	LEQ  reduce 27
+	GEQ  reduce 27
+	EQUALS  reduce 27
+	NEQ  reduce 27
+	DSEMI  reduce 27
+	DCOLON  reduce 27
+	IN  reduce 27
+	THEN  reduce 27
+	ELSE  reduce 27
+	LOGICALAND  reduce 27
+	LOGICALOR  reduce 27
+	RPAREN  reduce 27
+	COMMA  reduce 27
+
+
+state 95
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec MINUS arith_ops_high_prec_5th_highest_prec .  (29)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . TIMES exponentiation_4th_highest_prec  (33)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DTIMES exponentiation_4th_highest_prec  (34)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DIV exponentiation_4th_highest_prec  (35)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DDIV exponentiation_4th_highest_prec  (36)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . MOD exponentiation_4th_highest_prec  (37)
+
+	TIMES  shift 69
+	DIV  shift 70
+	DTIMES  shift 71
+	DDIV  shift 72
+	MOD  shift 73
+	PLUS  reduce 29
+	MINUS  reduce 29
+	DPLUS  reduce 29
+	DMINUS  reduce 29
+	CARAT  reduce 29
+	LT  reduce 29
+	GT  reduce 29
+	LEQ  reduce 29
+	GEQ  reduce 29
+	EQUALS  reduce 29
+	NEQ  reduce 29
+	DSEMI  reduce 29
+	DCOLON  reduce 29
+	IN  reduce 29
+	THEN  reduce 29
+	ELSE  reduce 29
+	LOGICALAND  reduce 29
+	LOGICALOR  reduce 29
+	RPAREN  reduce 29
+	COMMA  reduce 29
+
+
+state 96
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec DPLUS arith_ops_high_prec_5th_highest_prec .  (28)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . TIMES exponentiation_4th_highest_prec  (33)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DTIMES exponentiation_4th_highest_prec  (34)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DIV exponentiation_4th_highest_prec  (35)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DDIV exponentiation_4th_highest_prec  (36)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . MOD exponentiation_4th_highest_prec  (37)
+
+	TIMES  shift 69
+	DIV  shift 70
+	DTIMES  shift 71
+	DDIV  shift 72
+	MOD  shift 73
+	PLUS  reduce 28
+	MINUS  reduce 28
+	DPLUS  reduce 28
+	DMINUS  reduce 28
+	CARAT  reduce 28
+	LT  reduce 28
+	GT  reduce 28
+	LEQ  reduce 28
+	GEQ  reduce 28
+	EQUALS  reduce 28
+	NEQ  reduce 28
+	DSEMI  reduce 28
+	DCOLON  reduce 28
+	IN  reduce 28
+	THEN  reduce 28
+	ELSE  reduce 28
+	LOGICALAND  reduce 28
+	LOGICALOR  reduce 28
+	RPAREN  reduce 28
+	COMMA  reduce 28
+
+
+state 97
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec DMINUS arith_ops_high_prec_5th_highest_prec .  (30)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . TIMES exponentiation_4th_highest_prec  (33)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DTIMES exponentiation_4th_highest_prec  (34)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DIV exponentiation_4th_highest_prec  (35)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DDIV exponentiation_4th_highest_prec  (36)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . MOD exponentiation_4th_highest_prec  (37)
+
+	TIMES  shift 69
+	DIV  shift 70
+	DTIMES  shift 71
+	DDIV  shift 72
+	MOD  shift 73
+	PLUS  reduce 30
+	MINUS  reduce 30
+	DPLUS  reduce 30
+	DMINUS  reduce 30
+	CARAT  reduce 30
+	LT  reduce 30
+	GT  reduce 30
+	LEQ  reduce 30
+	GEQ  reduce 30
+	EQUALS  reduce 30
+	NEQ  reduce 30
+	DSEMI  reduce 30
+	DCOLON  reduce 30
+	IN  reduce 30
+	THEN  reduce 30
+	ELSE  reduce 30
+	LOGICALAND  reduce 30
+	LOGICALOR  reduce 30
+	RPAREN  reduce 30
+	COMMA  reduce 30
+
+
+state 98
+	arith_ops_low_prec_6th_highest_prec : arith_ops_low_prec_6th_highest_prec CARAT arith_ops_high_prec_5th_highest_prec .  (31)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . TIMES exponentiation_4th_highest_prec  (33)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DTIMES exponentiation_4th_highest_prec  (34)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DIV exponentiation_4th_highest_prec  (35)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . DDIV exponentiation_4th_highest_prec  (36)
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec . MOD exponentiation_4th_highest_prec  (37)
+
+	TIMES  shift 69
+	DIV  shift 70
+	DTIMES  shift 71
+	DDIV  shift 72
+	MOD  shift 73
+	PLUS  reduce 31
+	MINUS  reduce 31
+	DPLUS  reduce 31
+	DMINUS  reduce 31
+	CARAT  reduce 31
+	LT  reduce 31
+	GT  reduce 31
+	LEQ  reduce 31
+	GEQ  reduce 31
+	EQUALS  reduce 31
+	NEQ  reduce 31
+	DSEMI  reduce 31
+	DCOLON  reduce 31
+	IN  reduce 31
+	THEN  reduce 31
+	ELSE  reduce 31
+	LOGICALAND  reduce 31
+	LOGICALOR  reduce 31
+	RPAREN  reduce 31
+	COMMA  reduce 31
+
+
+state 99
+	cons_7th_highest_prec : arith_ops_low_prec_6th_highest_prec DCOLON cons_7th_highest_prec .  (25)
+
+	.  reduce 25
+
+
+state 100
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec TIMES exponentiation_4th_highest_prec .  (33)
+
+	.  reduce 33
+
+
+state 101
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec DIV exponentiation_4th_highest_prec .  (35)
+
+	.  reduce 35
+
+
+state 102
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec DTIMES exponentiation_4th_highest_prec .  (34)
+
+	.  reduce 34
+
+
+state 103
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec DDIV exponentiation_4th_highest_prec .  (36)
+
+	.  reduce 36
+
+
+state 104
+	arith_ops_high_prec_5th_highest_prec : arith_ops_high_prec_5th_highest_prec MOD exponentiation_4th_highest_prec .  (37)
+
+	.  reduce 37
+
+
+state 105
+	exponentiation_4th_highest_prec : raise_3rd_highest_prec EXP exponentiation_4th_highest_prec .  (39)
+
+	.  reduce 39
+
+
+state 106
 	main : LET IDENT EQUALS expression . DSEMI  (2)
 
-	DSEMI  shift 29
+	DSEMI  shift 114
 	.  error
 
 
-state 27
+state 107
 	main : LET REC IDENT IDENT . EQUALS expression DSEMI  (3)
 
-	EQUALS  shift 30
+	EQUALS  shift 115
 	.  error
 
 
-state 28
-	expression : LPAREN expression COMMA expression . RPAREN  (7)
+108: shift/reduce conflict (shift 116, reduce 56) on EQUALS
+state 108
+	letrecin_14_prec : LET REC var var . EQUALS letrecin_14_prec IN letrecin_14_prec  (6)
+	var : var .  (56)
 
-	RPAREN  shift 31
+	EQUALS  shift 116
+
+
+state 109
+	letin_13_prec : LET . var EQUALS letin_13_prec IN letin_13_prec  (8)
+
+
+	var  goto 41
+
+
+state 110
+	letin_13_prec : LET var EQUALS letin_13_prec . IN letin_13_prec  (8)
+
+	IN  shift 117
 	.  error
 
 
-state 29
+state 111
+	ifthenelse_11th_prec : IF ifthenelse_11th_prec THEN ifthenelse_11th_prec . ELSE ifthenelse_11th_prec  (12)
+
+	ELSE  shift 118
+	.  error
+
+
+state 112
+	fun_12_prec : FUN var ARROW fun_12_prec .  (10)
+
+	.  reduce 10
+
+
+state 113
+	expression : LPAREN expression COMMA expression . RPAREN  (4)
+
+	RPAREN  shift 119
+	.  error
+
+
+state 114
 	main : LET IDENT EQUALS expression DSEMI .  (2)
 
 	.  reduce 2
 
 
-state 30
+state 115
 	main : LET REC IDENT IDENT EQUALS . expression DSEMI  (3)
 
 	INT  shift 3
@@ -288,38 +2056,250 @@ state 30
 	TRUE  shift 7
 	FALSE  shift 8
 	NIL  shift 9
-	LPAREN  shift 11
-	UNIT  shift 12
+	LET  shift 46
+	IF  shift 11
+	FUN  shift 12
+	RAISE  shift 13
+	LPAREN  shift 14
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
 	.  error
 
-	expression  goto 32
-	atomic_expression  goto 15
-	my_const  goto 16
+	expression  goto 120
+	letrecin_14_prec  goto 23
+	letin_13_prec  goto 24
+	fun_12_prec  goto 25
+	ifthenelse_11th_prec  goto 26
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
 
 
-state 31
-	expression : LPAREN expression COMMA expression RPAREN .  (7)
+state 116
+	letrecin_14_prec : LET REC var var EQUALS . letrecin_14_prec IN letrecin_14_prec  (6)
 
-	.  reduce 7
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LET  shift 46
+	IF  shift 11
+	FUN  shift 12
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	letrecin_14_prec  goto 121
+	letin_13_prec  goto 24
+	fun_12_prec  goto 25
+	ifthenelse_11th_prec  goto 26
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
 
 
-state 32
+state 117
+	letin_13_prec : LET var EQUALS letin_13_prec IN . letin_13_prec  (8)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LET  shift 109
+	IF  shift 11
+	FUN  shift 12
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	letin_13_prec  goto 122
+	fun_12_prec  goto 25
+	ifthenelse_11th_prec  goto 26
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 118
+	ifthenelse_11th_prec : IF ifthenelse_11th_prec THEN ifthenelse_11th_prec ELSE . ifthenelse_11th_prec  (12)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	IF  shift 11
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	ifthenelse_11th_prec  goto 123
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 119
+	expression : LPAREN expression COMMA expression RPAREN .  (4)
+
+	.  reduce 4
+
+
+state 120
 	main : LET REC IDENT IDENT EQUALS expression . DSEMI  (3)
 
-	DSEMI  shift 33
+	DSEMI  shift 124
 	.  error
 
 
-state 33
+state 121
+	letrecin_14_prec : LET REC var var EQUALS letrecin_14_prec . IN letrecin_14_prec  (6)
+
+	IN  shift 125
+	.  error
+
+
+state 122
+	letin_13_prec : LET var EQUALS letin_13_prec IN letin_13_prec .  (8)
+
+	.  reduce 8
+
+
+state 123
+	ifthenelse_11th_prec : IF ifthenelse_11th_prec THEN ifthenelse_11th_prec ELSE ifthenelse_11th_prec .  (12)
+
+	.  reduce 12
+
+
+state 124
 	main : LET REC IDENT IDENT EQUALS expression DSEMI .  (3)
 
 	.  reduce 3
 
 
+state 125
+	letrecin_14_prec : LET REC var var EQUALS letrecin_14_prec IN . letrecin_14_prec  (6)
+
+	INT  shift 3
+	FLOAT  shift 4
+	STRING  shift 5
+	IDENT  shift 6
+	TRUE  shift 7
+	FALSE  shift 8
+	NIL  shift 9
+	LET  shift 46
+	IF  shift 11
+	FUN  shift 12
+	RAISE  shift 13
+	LPAREN  shift 42
+	UNIT  shift 15
+	HEAD  shift 16
+	TAIL  shift 17
+	PRINT  shift 18
+	FST  shift 19
+	SND  shift 20
+	.  error
+
+	letrecin_14_prec  goto 126
+	letin_13_prec  goto 24
+	fun_12_prec  goto 25
+	ifthenelse_11th_prec  goto 26
+	or_10th_highest_prec  goto 27
+	and_9th_highest_prec  goto 28
+	logical_8th_highest_prec  goto 29
+	cons_7th_highest_prec  goto 30
+	arith_ops_low_prec_6th_highest_prec  goto 31
+	arith_ops_high_prec_5th_highest_prec  goto 32
+	exponentiation_4th_highest_prec  goto 33
+	raise_3rd_highest_prec  goto 34
+	app_2nd_highest_prec  goto 35
+	highest_1st_prec  goto 36
+	atomic_expression  goto 37
+	my_const  goto 38
+
+
+state 126
+	letrecin_14_prec : LET REC var var EQUALS letrecin_14_prec IN letrecin_14_prec .  (6)
+
+	.  reduce 6
+
+
 Rules never reduced:
-	pat : UNDERSCORE  (8)
-	pat : INT  (9)
+	pat : UNDERSCORE  (51)
+	pat : INT  (52)
+	var : var  (56)
 
 
-60 terminals, 7 nonterminals
-20 grammar rules, 34 states
+State 41 contains 1 shift/reduce conflict.
+State 44 contains 1 shift/reduce conflict.
+State 108 contains 1 shift/reduce conflict.
+
+
+60 terminals, 22 nonterminals
+66 grammar rules, 127 states
