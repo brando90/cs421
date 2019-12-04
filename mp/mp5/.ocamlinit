@@ -4,3 +4,4 @@
 #load "solution.cmo";;
 open Common;;
 #use "mp5.ml";;
+#use "my_tests.ml";;

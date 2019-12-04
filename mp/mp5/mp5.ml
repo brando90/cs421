@@ -9,7 +9,39 @@ let const_to_val c =
     | NilConst -> UnitVal (* TODO *)
     | UnitConst -> UnitVal
 
-let monOpApply op v = raise (Failure "Not implemented yet.")
+let rec my_tl lst =
+  match lst with
+    | [] -> []
+    | x::xs -> if xs==[] then x else my_tl xs
+
+(*  mon op -> value -> value *)
+let monOpApply op v =
+  print_value v;print_string "HERE!!!";
+  match op with
+    | HdOp ->
+      match v with
+        | ListVal(v,lst) -> v
+        | _ -> raise (Failure "Not implemented yet.")
+    | TlOp ->
+      match v with
+        | ListVal(v,lst) -> my_tl (v::lst) (* TODO: is there a better solution *)
+        | _ -> raise (Failure "Not implemented yet.")
+    | PrintOp ->
+      match v with
+        | StringVal s -> print_string s;UnitVal
+        | _ -> raise (Failure "Not implemented yet.")
+    | IntNegOp ->
+      match v with
+        | IntVal i -> IntVal(-i)
+        | _ -> raise (Failure "Not implemented yet.")
+    | FstOp ->
+      match v with
+        | PairVal(v1,v2) -> v1
+        | _ -> raise (Failure "Not implemented yet.")
+    | SndOp ->
+      match v with
+        | PairVal(v1,v2) -> v2
+        | _ -> raise (Failure "Not implemented yet.")
 
 let binOpApply binop (v1,v2) = raise (Failure "Not implemented yet.")
 
@@ -18,17 +50,18 @@ let rec eval_exp (exp, m) =
   match exp with
     | VarExp x ->
       let some_v=lookup_env m x in
-      ( match some_v with
+      (match some_v with
         | None -> raise (Failure "Not implemented yet.") (* TODO what do we do here? *)
         | Some v ->
-      (* let v=(match [lookup_env m x] with None -> None | Some v -> v) in *)
-          ( match v with
+          (match v with
             | RecVarVal(f,y,e,m') -> raise (Failure "Not implemented yet.")
             | _ -> v
               )
         )
     | ConstExp c -> const_to_val c
-    | MonOpAppExp (mon_op, e)         -> raise (Failure "Not implemented yet.")
+    | MonOpAppExp (mon_op, e) ->
+      let v=eval_exp e m in
+      let v'=monOpApply v in v'
     | BinOpAppExp (bin_op, e1, e2)   -> raise (Failure "Not implemented yet.")
     | IfExp (e1, e2, e3)            -> raise (Failure "Not implemented yet.")
     | AppExp (e1,e2)                -> raise (Failure "Not implemented yet.")
