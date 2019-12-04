@@ -13,9 +13,20 @@ let monOpApply op v = raise (Failure "Not implemented yet.")
 
 let binOpApply binop (v1,v2) = raise (Failure "Not implemented yet.")
 
+(* exp * memory -> value *)
 let rec eval_exp (exp, m) =
   match exp with
-    | VarExp s -> raise (Failure "Not implemented yet.")
+    | VarExp x ->
+      let some_v=lookup_env m x in
+      ( match some_v with
+        | None -> raise (Failure "Not implemented yet.") (* TODO what do we do here? *)
+        | Some v ->
+      (* let v=(match [lookup_env m x] with None -> None | Some v -> v) in *)
+          ( match v with
+            | RecVarVal(f,y,e,m') -> raise (Failure "Not implemented yet.")
+            | _ -> v
+              )
+        )
     | ConstExp c -> const_to_val c
     | MonOpAppExp (mon_op, e)         -> raise (Failure "Not implemented yet.")
     | BinOpAppExp (bin_op, e1, e2)   -> raise (Failure "Not implemented yet.")
@@ -32,6 +43,14 @@ let eval_dec (dec, m) =
   match dec with
     | Anon e ->
       let v=eval_exp (e, m) in
-      (Some "_", v)
-    | Let (s,e) -> raise (Failure "Not implemented yet.")
+      let new_binding=(None, v) in
+      (new_binding, m)
+      (* (Some "_", v) *)
+    | Let (x,e) ->  (* let x = e;; in memory m *)
+      (* if condition for proof rule *)
+      let v=eval_exp (e, m) in (* (e,m)=>v*)
+      (* conclusion for proof rule *)
+      let new_binding = (Some x,v) in
+      let new_memory = ins_env m x v in
+      (new_binding,new_memory)
     | LetRec (s1,s2,e) -> raise (Failure "Not implemented yet.")
