@@ -9,39 +9,58 @@ let const_to_val c =
     | NilConst -> UnitVal (* TODO *)
     | UnitConst -> UnitVal
 
-let rec my_tl lst =
+let rec my_tl (lst:value list) =
   match lst with
-    | [] -> []
-    | x::xs -> if xs==[] then x else my_tl xs
+    | [] -> None
+    | x::xs -> if xs=[] then Some x else my_tl xs
+
+let my_hd lst =
+  match lst with
+    | [] -> None
+    | x::xs -> Some x
 
 (*  mon op -> value -> value *)
 let monOpApply op v =
   print_value v;print_string "HERE!!!";
   match op with
     | HdOp ->
-      match v with
-        | ListVal(v,lst) -> v
+      ( match v with
+        | ListVal(value_list) ->
+          ( match my_hd value_list with
+              | None -> Exn(0)
+              | Some v -> v
+            )
         | _ -> raise (Failure "Not implemented yet.")
+      )
     | TlOp ->
-      match v with
-        | ListVal(v,lst) -> my_tl (v::lst) (* TODO: is there a better solution *)
+      ( match v with
+        | ListVal(value_list) ->
+          ( match my_tl value_list with
+              | None -> Exn(0)
+              | Some v -> v
+            )
         | _ -> raise (Failure "Not implemented yet.")
+      )
     | PrintOp ->
-      match v with
+      ( match v with
         | StringVal s -> print_string s;UnitVal
         | _ -> raise (Failure "Not implemented yet.")
+      )
     | IntNegOp ->
-      match v with
+      ( match v with
         | IntVal i -> IntVal(-i)
         | _ -> raise (Failure "Not implemented yet.")
+      )
     | FstOp ->
-      match v with
+      ( match v with
         | PairVal(v1,v2) -> v1
         | _ -> raise (Failure "Not implemented yet.")
+      )
     | SndOp ->
-      match v with
+      ( match v with
         | PairVal(v1,v2) -> v2
         | _ -> raise (Failure "Not implemented yet.")
+      )
 
 let binOpApply binop (v1,v2) = raise (Failure "Not implemented yet.")
 

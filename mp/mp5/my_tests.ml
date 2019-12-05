@@ -21,4 +21,10 @@ eval_exp (VarExp "x", [("x", IntVal 2)]);;
 
 (* 5 monOp *)
 monOpApply IntNegOp (IntVal 2);;
+
 eval_exp (MonOpAppExp(IntNegOp, ConstExp (IntConst 2)), []);;
+
+eval_dec (Anon
+(BinOpAppExp(IntDivOp, ConstExp (IntConst 4), ConstExp (IntConst 0))), []);;
+
+(* TODO write test for div by zero, extract head and tail of empty list *)
