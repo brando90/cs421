@@ -16,10 +16,10 @@ let string_of_const = function
 
 type bin_op = IntPlusOp | IntMinusOp | IntTimesOp | IntDivOp
            | FloatPlusOp | FloatMinusOp | FloatTimesOp | FloatDivOp 
-           | ConcatOp | ConsOp | CommaOp | EqOp | GreaterOp 
+           | ConcatOp | ConsOp | CommaOp | EqOp | GreaterOp
            | ModOp | ExpoOp
 
-let string_of_bin_op = function 
+let string_of_bin_op = function
      IntPlusOp  -> " + "
    | IntMinusOp -> " - "
    | IntTimesOp -> " * "
@@ -50,10 +50,10 @@ let string_of_mon_op m =
 type exp =  (* Exceptions will be added in later MPs *)
    | VarExp of string                    (* variables *)
    | ConstExp of const                   (* constants *)
-   | MonOpAppExp of mon_op * exp         (* % e1 for % is a builtin monadic operator *) 
+   | MonOpAppExp of mon_op * exp         (* % e1 for % is a builtin monadic operator *)
    | BinOpAppExp of bin_op * exp * exp   (* e1 % e2 for % is a builtin binary operator *)
    | IfExp of exp * exp * exp            (* if e1 then e2 else e3 *)
-   | AppExp of exp * exp                 (* e1 e2 *) 
+   | AppExp of exp * exp                 (* e1 e2 *)
    | FunExp of string * exp              (* fun x -> e1 *)
    | LetInExp of string * exp * exp      (* let x = e1 in e2 *)
    | LetRecInExp of string * string * exp * exp (* let rec f x = e1 in e2 *)
@@ -72,22 +72,22 @@ let rec string_of_exp = function
  | IfExp(e1,e2,e3)->"if " ^ (string_of_exp e1) ^
                  " then " ^ (string_of_exp e2) ^
                  " else " ^ (string_of_exp e3)
- | MonOpAppExp (m,e) ->  (string_of_mon_op m) ^ " " ^ (paren_string_of_exp e) 
- | BinOpAppExp (b,e1,e2) -> 
+ | MonOpAppExp (m,e) ->  (string_of_mon_op m) ^ " " ^ (paren_string_of_exp e)
+ | BinOpAppExp (b,e1,e2) ->
    (match b with CommaOp -> ("(" ^ (paren_string_of_exp e1) ^ (string_of_bin_op b) ^
                               (paren_string_of_exp e2) ^ ")")
     | _ -> ((paren_string_of_exp e1) ^ " " ^ (string_of_bin_op b)
             ^ " " ^ (paren_string_of_exp e2)))
- | AppExp(e1,e2) -> (non_app_paren_string_of_exp e1) ^ " " ^ (paren_string_of_exp e2) 
+ | AppExp(e1,e2) -> (non_app_paren_string_of_exp e1) ^ " " ^ (paren_string_of_exp e2)
  | FunExp (x,e) ->  ("fun " ^ x ^ " -> " ^ (string_of_exp e))
  | LetInExp (x,e1,e2) -> ("let "^x^" = "^ (string_of_exp e1) ^ " in " ^ (string_of_exp e2))
- | LetRecInExp (f,x,e1,e2) -> 
+ | LetRecInExp (f,x,e1,e2) ->
     ("let rec "^f^" "^x^" = "^(string_of_exp e1) ^ " in " ^ (string_of_exp e2))
  | RaiseExp e -> "raise " ^ (string_of_exp e)
  | TryWithExp (e,intopt1,exp1,match_list) ->
     "try " ^ (paren_string_of_exp e) ^  " with " ^
      (string_of_exc_match (intopt1,exp1)) ^
-     (List.fold_left (fun s m -> (s^" | " ^ (string_of_exc_match m))) "" match_list) 
+     (List.fold_left (fun s m -> (s^" | " ^ (string_of_exc_match m))) "" match_list)
 
 and paren_string_of_exp e =
     match e with VarExp _ | ConstExp _ -> string_of_exp e
@@ -96,20 +96,20 @@ and paren_string_of_exp e =
 and non_app_paren_string_of_exp e =
     match e with AppExp (_,_) -> string_of_exp e
     | _ -> paren_string_of_exp e
- 
+
 
 and string_of_exc_match (int_opt, e) =
     (match int_opt with None -> "_" | Some n -> string_of_int n) ^
     " -> " ^
     (string_of_exp e)
-							
+
 let string_of_dec = function
  | Anon e -> ("let _ = "^ (string_of_exp e))
  | Let (s, e) ->  ("let "^ s ^" = " ^ (string_of_exp e))
- | LetRec (fname,argname,fn) -> 
+ | LetRec (fname,argname,fn) ->
     ("let rec " ^ fname ^ " " ^ argname ^ " = " ^ (string_of_exp fn))
 
-let print_exp exp = print_string (string_of_exp exp) 
+let print_exp exp = print_string (string_of_exp exp)
 let print_dec dec = print_string (string_of_dec dec)
 
 (* Util functions *)
@@ -130,7 +130,7 @@ let rec expand n (list,len) =
         if q = 0 then (n :: list, len + 1)
         else expand q (((n mod 26)::list), len + 1);;
 
-let string_of_typeVar n = 
+let string_of_typeVar n =
    let (num_list,len) =
        match (expand n ([],0))
        with ([],l) -> ([],l) (* can't actually happen *)
@@ -155,10 +155,10 @@ let rec string_of_monoTy t =
    | t'::ts -> string_of_monoTy t'^ ","^ string_of_tylist ts
   in
   let string_of_subty s =
-  match s with 
+  match s with
      TyConst ("*", _) | TyConst ("->", _) -> ("("^ string_of_monoTy s^ ")")
    | _ ->  string_of_monoTy s
-  in 
+  in
     match t with
        TyVar n         -> (string_of_typeVar n)
      |TyConst (name, []) -> name
@@ -231,16 +231,16 @@ let binop_signature binop = match binop with
    | FloatTimesOp   -> float_op_ty
    | FloatDivOp   -> float_op_ty
    | ConcatOp -> string_op_ty
-   | ConsOp -> 
+   | ConsOp ->
        let alpha = TyVar 0
-       in ([0], 
+       in ([0],
               mk_fun_ty alpha (mk_fun_ty (mk_list_ty alpha) (mk_list_ty alpha)))
    | CommaOp ->
        let alpha = TyVar 0 in
        let beta = TyVar 1 in
            ([0;1],
             mk_fun_ty alpha (mk_fun_ty beta (mk_pair_ty alpha beta)))
-   | EqOp -> 
+   | EqOp ->
      let alpha = TyVar 0 in ([0],mk_fun_ty alpha (mk_fun_ty alpha bool_ty))
    | GreaterOp ->
      let alpha = TyVar 0 in ([0],mk_fun_ty alpha (mk_fun_ty alpha bool_ty))
@@ -262,7 +262,7 @@ type 'a env = (string * 'a) list
 let freeVarsEnv l = delete_duplicates (
     List.fold_right (fun (_,pty) fvs -> freeVarsPolyTy pty @ fvs) l [])
 
-let string_of_env string_of_entry gamma = 
+let string_of_env string_of_entry gamma =
   let rec string_of_env_aux gamma =
     match gamma with
        []        -> ""
@@ -287,7 +287,7 @@ let lookup_env (gamma:'a env) x = lookup gamma x
 let sum_env (delta:'a env) (gamma:'a env) = ((delta@gamma):'a env)
 let ins_env (gamma:'a env) x y = sum_env (make_env x y) gamma
 
-(*judgment*) 
+(*judgment*)
 type judgment =
    ExpJudgment of type_env * exp * monoTy
  | DecJudgment of type_env * dec * type_env
@@ -318,7 +318,7 @@ let string_of_proof p =
          then string_of_assum depth lst assum
       else ""
   and string_of_assum depth lst assum =
-    match assum with 
+    match assum with
        []     -> ""
      | p'::ps -> string_of_proof_aux p' (depth + 1) (lst@[ps=[]])^
                  string_of_assum depth lst ps
@@ -338,18 +338,18 @@ let rec contains n ty =
      List.fold_left (fun xl x -> if xl then xl else contains n x) false typelst;;
 
 (* Problem 2 *)
-let rec substitute ie ty = 
-  let n,sub = ie 
+let rec substitute ie ty =
+  let n,sub = ie
   in match ty with
        TyVar m -> if n=m then sub else ty
      | TyConst(st, typelist) -> TyConst(st, List.map (fun t -> substitute ie t) typelist);;
 
 let polyTySubstitute s (pty:polyTy) =
     match s with  (n,residue) ->
-    (match pty with (bound_vars, ty) -> 
+    (match pty with (bound_vars, ty) ->
            if List.mem n bound_vars then pty
            else ((bound_vars, substitute s ty):polyTy))
-    
+
 
 (* Problem 3 *)
 let rec monoTy_lift_subst (s:substitution) ty =
@@ -363,7 +363,7 @@ let rec monoTy_rename_tyvars s mty =
     | TyConst(c, tys) -> TyConst(c, List.map (monoTy_rename_tyvars s) tys)
 
 let subst_compose (s2:substitution) (s1:substitution) : substitution =
-    (List.filter (fun (tv,_) -> not(List.mem_assoc tv s1)) s2) @ 
+    (List.filter (fun (tv,_) -> not(List.mem_assoc tv s1)) s2) @
     (List.map (fun (tv,residue) -> (tv, monoTy_lift_subst s2 residue)) s1)
 
 let gen (env:type_env) ty =
@@ -428,7 +428,7 @@ let rec unify eqlst : substitution option =
     (* Delete *)
   | (s,t)::eqs when s=t -> unify eqs
     (* Eliminate *)
-  | (TyVar(n),t)::eqs when not(contains n t)-> 
+  | (TyVar(n),t)::eqs when not(contains n t)->
       let eqs' = List.map (fun (t1,t2) -> (substitute (n,t) t1 , substitute (n,t) t2)) eqs
       in (match unify eqs' with
            None -> None
@@ -436,7 +436,7 @@ let rec unify eqlst : substitution option =
     (* Orient *)
   | (TyConst(str, tl), TyVar(m))::eqs -> unify ((TyVar(m), TyConst(str, tl))::eqs)
     (* Decompose *)
-  | (TyConst(str, tl), TyConst(str', tl'))::eqs when str=str' -> 
+  | (TyConst(str, tl), TyConst(str', tl'))::eqs when str=str' ->
       (match (addNewEqs tl tl' eqs) with
         None -> None
       | Some l -> unify l)
@@ -478,9 +478,9 @@ let get_proof = function
    None       -> raise(Failure "None")
  | Some(ty,p) -> p
 
-let infer_exp gather_exp (gamma:type_env) (exp:exp) = 
+let infer_exp gather_exp (gamma:type_env) (exp:exp) =
   let ty = fresh() in
-  let result = 
+  let result =
     match gather_exp gamma exp ty with
        None         -> None
      | Some(proof,sigma) -> match ty with
@@ -490,7 +490,7 @@ let infer_exp gather_exp (gamma:type_env) (exp:exp) =
   result;;
 
 let infer_dec gather_dec (gamma:type_env) (dec:dec) =
-  let result = 
+  let result =
     match gather_dec gamma dec with
        None -> None
      | Some(proof,sigma) -> Some (proof_lift_subst sigma proof)
@@ -499,17 +499,17 @@ let infer_dec gather_dec (gamma:type_env) (dec:dec) =
 
 let string_of_constraints c =
   let rec aux c =
-     match c with 
+     match c with
      | [] -> ""
      | [(s,t)] ->  (string_of_monoTy s^ " --> "^ string_of_monoTy t)
      | (s,t)::c' -> (string_of_monoTy s^ " --> "^ string_of_monoTy t^
 		     "; "^ aux c')
   in ("["^ aux c^ "]\n")
 
- 
+
 let string_of_substitution s =
   let rec aux s =
-     match s with 
+     match s with
      | [] -> ""
      | [(i,t)] -> ((string_of_typeVar i)  ^ " |--> " ^ string_of_monoTy t)
      | (i,t)::s' -> (((string_of_typeVar i)  ^ " |--> ")^
@@ -517,10 +517,10 @@ let string_of_substitution s =
   in ("["^ aux s^ "]\n")
 
 
-let niceInfer_exp gather_exp (gamma:type_env) exp = 
+let niceInfer_exp gather_exp (gamma:type_env) exp =
   let ty = fresh()
   in
-  let result = 
+  let result =
     match gather_exp gamma exp ty with
      None ->
       (print_string("Failure: No type for expression: "^
@@ -549,8 +549,8 @@ let niceInfer_exp gather_exp (gamma:type_env) exp =
 
 let niceInfer_dec
     (gather_dec:(type_env -> dec -> (proof * type_env * substitution) option))
-    (gamma:type_env) dec = 
-  let result = 
+    (gamma:type_env) dec =
+  let result =
     match gather_dec gamma dec with
      None ->
       (print_string("Failure: No type for declaraion: "^
@@ -596,7 +596,7 @@ let rec collectProofVars prf lst =
   match prf with Proof (assum, jdg)
    -> collectAssumVars assum (collectJdgVars jdg lst)
 and collectAssumVars assum lst =
-  match assum with 
+  match assum with
     []     -> lst
   | p::ps -> collectAssumVars ps (collectProofVars p lst)
 
@@ -604,8 +604,8 @@ let canonicalize_proof prf_opt =
     match prf_opt with None -> None
     | Some(ty, prf) ->
   let (varlst,_) =
-    List.fold_right (fun x (xl,idx) -> ((x,idx)::xl), idx+1) 
-      (delete_duplicates (collectProofVars prf (collectTypeVars ty []))) 
+    List.fold_right (fun x (xl,idx) -> ((x,idx)::xl), idx+1)
+      (delete_duplicates (collectProofVars prf (collectTypeVars ty [])))
       ([],1)
   in Some(monoTy_rename_tyvars varlst ty, proof_rename_tyvars varlst prf)
 
@@ -615,7 +615,7 @@ let canon_dec prf_opt =
     match prf_opt with None -> None
     | Some prf ->
   let (varlst,_) =
-    List.fold_right (fun x (xl,idx) -> ((x, idx)::xl), idx+1) 
+    List.fold_right (fun x (xl,idx) -> ((x, idx)::xl), idx+1)
       (delete_duplicates (collectProofVars prf []))
       ([],1)
   in Some(proof_rename_tyvars varlst prf)
@@ -634,7 +634,7 @@ let rec gather_exp_ty_substitution gamma exp tau =
          (match unify [(tau, freshInstance tau')]
           with None       -> None
              | Some sigma -> Some(Proof([],judgment), sigma))
-    | VarExp x -> 
+    | VarExp x ->
       (match lookup_env gamma x with None -> None
        | Some gamma_x ->
          (match unify [(tau, freshInstance gamma_x)]
@@ -655,7 +655,7 @@ let rec gather_exp_ty_substitution gamma exp tau =
                           (mk_fun_ty tau1 (mk_fun_ty tau2 tau)),
                          freshInstance tau')]
              with None -> None
-             | Some sigma3 -> 
+             | Some sigma3 ->
                Some(Proof([pf1;pf2], judgment),subst_compose sigma3 sigma21))))
     | MonOpAppExp (monop, e1) ->
       let tau' = monop_signature monop in
@@ -710,14 +710,14 @@ let rec gather_exp_ty_substitution gamma exp tau =
       (match gather_exp_ty_substitution gamma e int_ty
        with None -> None
        | Some(pf, sigma) -> Some(Proof([pf],judgment), sigma))
-    | LetInExp(x,e1,e2)  -> 
+    | LetInExp(x,e1,e2)  ->
        let tau1 = fresh() in
        (match gather_exp_ty_substitution gamma e1 tau1
 	with None -> None
-	   | Some(pf1, sigma1) -> 
-	      let delta_env = make_env x (gen (env_lift_subst sigma1 gamma) 
+	   | Some(pf1, sigma1) ->
+	      let delta_env = make_env x (gen (env_lift_subst sigma1 gamma)
 					      (monoTy_lift_subst sigma1 tau1)) in
-	      (match gather_exp_ty_substitution 
+	      (match gather_exp_ty_substitution
 		       (sum_env delta_env (env_lift_subst sigma1 gamma)) e2
                          (monoTy_lift_subst sigma1 tau)
 	       with None -> None
@@ -733,7 +733,7 @@ let rec gather_exp_ty_substitution gamma exp tau =
 			  x (polyTy_of_monoTy tau1))
 		e1 tau2
 	with None -> None
-	   | Some(pf1, sigma1) -> 
+	   | Some(pf1, sigma1) ->
               let sigma1_gamma = env_lift_subst sigma1 gamma in
 	      let sigma1_tau1_to_tau2 = monoTy_lift_subst sigma1 tau1_to_tau2 in
 	      (match gather_exp_ty_substitution
@@ -776,19 +776,19 @@ in (
     result)
 
 let rec gather_dec_ty_substitution gamma dec =
-    match dec with 
+    match dec with
     | Anon e ->
       let tau = fresh() in
       (match gather_exp_ty_substitution gamma e tau
 	with None -> None
 	   | Some(pf, sigma) ->
              Some(Proof([pf],DecJudgment (gamma, dec, [])), sigma))
-    | Let(x,e) -> 
+    | Let(x,e) ->
        let tau = fresh() in
        (match gather_exp_ty_substitution gamma e tau
 	with None -> None
-	   | Some(pf, sigma) -> 
-	      let delta_env = make_env x (gen (env_lift_subst sigma gamma) 
+	   | Some(pf, sigma) ->
+	      let delta_env = make_env x (gen (env_lift_subst sigma gamma)
 					      (monoTy_lift_subst sigma tau)) in
              Some(Proof([pf],DecJudgment (gamma, dec, delta_env)),sigma))
     | LetRec(f,x,e) ->
@@ -800,12 +800,12 @@ let rec gather_dec_ty_substitution gamma dec =
 			  x (polyTy_of_monoTy tau1))
 		e tau2
 	with None -> None
-	   | Some(pf, sigma) -> 
+	   | Some(pf, sigma) ->
               let sigma_gamma = env_lift_subst sigma gamma in
 	      let sigma_tau1_to_tau2 = monoTy_lift_subst sigma tau1_to_tau2 in
               let delta_env =
                  (ins_env sigma_gamma f (gen sigma_gamma sigma_tau1_to_tau2))
-              in 
+              in
 	      Some(Proof([pf],DecJudgment (gamma, dec, delta_env)),sigma))
 
 
@@ -832,7 +832,7 @@ let ins_mem (gamma:memory) x y = sum_mem (make_mem x y) gamma
 let rec print_value v =
    match v with
     UnitVal           -> print_string "()"
-  | IntVal n          -> if n < 0 then (print_string "~"; print_int (abs n)) else print_int n 
+  | IntVal n          -> if n < 0 then (print_string "~"; print_int (abs n)) else print_int n
   | FloatVal r        -> print_float r
   | BoolVal true      -> print_string "true"
   | BoolVal false     -> print_string "false"
@@ -866,7 +866,7 @@ let compact_memory m =
 (*memory output*)
 let print_memory m =
     let cm = compact_memory m in
-    let rec print_m m = 
+    let rec print_m m =
     (match m with
         []           -> ()
       | (x, v) :: m' -> print_m m';

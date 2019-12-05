@@ -20,11 +20,12 @@ print_string "\n----> 4 identifiers\n";;
 eval_exp (VarExp "x", [("x", IntVal 2)]);;
 
 (* 5 monOp *)
+monOpApply HdOp (ListVal []);;
+monOpApply TlOp (ListVal []);;
+
 monOpApply IntNegOp (IntVal 2);;
 
 eval_exp (MonOpAppExp(IntNegOp, ConstExp (IntConst 2)), []);;
 
-eval_dec (Anon
-(BinOpAppExp(IntDivOp, ConstExp (IntConst 4), ConstExp (IntConst 0))), []);;
-
-(* TODO write test for div by zero, extract head and tail of empty list *)
+(* 6 binOp *)
+eval_exp (BinOpAppExp(IntPlusOp, ConstExp(IntConst(3)), ConstExp(IntConst(4))), []) ;;
