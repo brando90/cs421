@@ -199,8 +199,15 @@ let rec eval_exp (exp, m) =
         )
     | BinOpAppExp (bin_op, e1, e2)   ->
       let v1=eval_exp (e1,m) in
-      let v2=eval_exp (e2,m) in
-      let v=binOpApply bin_op (v1,v2) in v
+      ( match v1 with
+        | Exn i -> Exn(i)
+        | _ ->
+        let v2=eval_exp (e2,m) in
+        ( match v2 with
+          | Exn j -> Exn(j)
+          | _ -> let v=binOpApply bin_op (v1,v2) in v
+          )
+        )
     | IfExp (e1, e2, e3) ->
       let bool_guard=eval_exp (e1,m) in
       ( match bool_guard with
@@ -209,6 +216,7 @@ let rec eval_exp (exp, m) =
             | true -> let v=eval_exp (e2,m) in v
             | false -> let v=eval_exp (e3,m) in v
             )
+          | Exn i -> Exn(i)
           | _ -> Exn(0)
         )
     | AppExp (e1,e2) ->
