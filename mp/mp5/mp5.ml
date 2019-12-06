@@ -103,17 +103,77 @@ let binOpApply binop (v1,v2) =
             )
           | _ -> Exn(0)
         )
-    | FloatPlusOp -> raise (Failure "Not implemented yet.")
-    | FloatMinusOp -> raise (Failure "Not implemented yet.")
-    | FloatTimesOp -> raise (Failure "Not implemented yet.")
-    | FloatDivOp -> raise (Failure "Not implemented yet.")
-    | ConcatOp -> raise (Failure "Not implemented yet.")
-    | ConsOp -> raise (Failure "Not implemented yet.")
-    | CommaOp -> raise (Failure "Not implemented yet.")
-    | EqOp -> raise (Failure "Not implemented yet.")
-    | GreaterOp -> raise (Failure "Not implemented yet.")
-    | ModOp -> raise (Failure "Not implemented yet.")
-    | ExpoOp -> raise (Failure "Not implemented yet.")
+    | FloatPlusOp ->
+      ( match v1 with
+          | FloatVal f1 ->
+          ( match v2 with
+            | FloatVal f2 -> FloatVal( f1 +. f2 )
+            | _ -> Exn(0)
+            )
+            | _ -> Exn(0)
+          )
+    | FloatMinusOp ->
+      ( match v1 with
+          | FloatVal f1 ->
+          ( match v2 with
+            | FloatVal f2 -> FloatVal( f1 -. f2 )
+            | _ -> Exn(0)
+            )
+            | _ -> Exn(0)
+          )
+    | FloatTimesOp ->
+      ( match v1 with
+          | FloatVal f1 ->
+          ( match v2 with
+            | FloatVal f2 -> FloatVal( f1 *. f2 )
+            | _ -> Exn(0)
+            )
+            | _ -> Exn(0)
+          )
+    | FloatDivOp ->
+      ( match v1 with
+          | FloatVal f1 ->
+          ( match v2 with
+            | FloatVal f2 -> if f2=0.0 then Exn(0) else FloatVal( f1 /. f2 )
+            | _ -> Exn(0)
+            )
+            | _ -> Exn(0)
+          )
+    | ConcatOp ->
+      ( match v1 with
+          | StringVal s1 ->
+          ( match v2 with
+            | StringVal s2 -> StringVal( s1^s2 )
+            | _ -> Exn(0)
+            )
+            | _ -> Exn(0)
+          )
+    | ConsOp ->
+      ( match v2 with
+        | ListVal v_list -> ListVal( v1::v_list )
+        | _ -> Exn(0)
+        )
+    | CommaOp -> PairVal(v1,v2) (* TODO same Q as above *)
+    | EqOp -> BoolVal(v1=v2)
+    | GreaterOp -> BoolVal(v1>v2)
+    | ModOp ->
+      ( match v1 with
+          | IntVal i1 ->
+          ( match v2 with
+            | IntVal i2 -> IntVal( i1 mod i2 )
+            | _ -> Exn(0)
+            )
+            | _ -> Exn(0)
+          )
+    | ExpoOp ->
+      ( match v1 with
+          | FloatVal f1 ->
+          ( match v2 with
+            | FloatVal f2 -> FloatVal( f1**f2 )
+            | _ -> Exn(0)
+            )
+            | _ -> Exn(0)
+          )
 
 (* exp * memory -> value *)
 let rec eval_exp (exp, m) =
@@ -132,11 +192,34 @@ let rec eval_exp (exp, m) =
     | MonOpAppExp (mon_op, e) ->
       let v=eval_exp (e, m) in
       let v'=monOpApply mon_op v in v'
-    | BinOpAppExp (bin_op, e1, e2)   -> raise (Failure "Not implemented yet.")
-    | IfExp (e1, e2, e3)            -> raise (Failure "Not implemented yet.")
-    | AppExp (e1,e2)                -> raise (Failure "Not implemented yet.")
-    | FunExp (s,e)             -> raise (Failure "Not implemented yet.")
-    | LetInExp (s,e1,e2)      -> raise (Failure "Not implemented yet.")
+    | BinOpAppExp (bin_op, e1, e2)   ->
+      let v1=eval_exp (e1,m) in
+      let v2=eval_exp (e2,m) in
+      let v=binOpApply bin_op (v1,v2) in v
+    | IfExp (e1, e2, e3) ->
+      let bool_guard=eval_exp (e1,m) in
+      ( match bool_guard with
+          | BoolVal b ->
+          ( match b with
+            | true -> let v=eval_exp (e2,m) in v
+            | false -> let v=eval_exp (e3,m) in v
+            )
+          | _ -> Exn(0)
+        )
+    | AppExp (e1,e2) ->
+      let e1_closure=eval_exp (e1,m) in
+        ( match e1_closure with
+            | Closure (x,e',m') ->
+              let v'=eval_exp (e2,m) in
+              let m''=ins_env m' x v' in
+              let v=eval_exp (e',m'') in v
+            | _ -> Exn(0)
+          )
+    | FunExp (x,e) -> Closure(x,e,m)
+    | LetInExp (x,e1,e2) ->
+      let v1=eval_exp (e1,m) in
+      let m'=ins_env m x v1 in
+      let v2=eval_exp (e2,m') in v2
     | LetRecInExp (s1,s2,e1,e2) -> raise (Failure "Not implemented yet.")
     | RaiseExp (e)                            -> raise (Failure "Not implemented yet.")
     | TryWithExp (e1,some_i,e2, lst) -> raise (Failure "Not implemented yet.") (* of (exp * int option * exp * (int option * exp) list) *)
@@ -145,8 +228,9 @@ let rec eval_exp (exp, m) =
 let eval_dec (dec, m) =
   match dec with
     | Anon e ->
+      let variable=None in
       let v=eval_exp (e, m) in
-      let new_binding=(None, v) in
+      let new_binding=(variable, v) in
       (new_binding, m)
       (* (Some "_", v) *)
     | Let (x,e) ->  (* let x = e;; in memory m *)
@@ -156,4 +240,9 @@ let eval_dec (dec, m) =
       let new_binding = (Some x,v) in
       let new_memory = ins_env m x v in
       (new_binding,new_memory)
-    | LetRec (s1,s2,e) -> raise (Failure "Not implemented yet.")
+    | LetRec (f,x,e) ->
+      let variable=Some f in
+      let v=RecVarVal(f,x,e,m) in
+      let new_binding=(variable,v) in
+      let m'=ins_env m f v in
+      (new_binding, m')

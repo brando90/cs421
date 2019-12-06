@@ -29,3 +29,24 @@ eval_exp (MonOpAppExp(IntNegOp, ConstExp (IntConst 2)), []);;
 
 (* 6 binOp *)
 eval_exp (BinOpAppExp(IntPlusOp, ConstExp(IntConst(3)), ConstExp(IntConst(4))), []) ;;
+
+(* 7 if *)
+eval_exp (IfExp(ConstExp(BoolConst true), ConstExp(IntConst 1), ConstExp(IntConst 0)), []);;
+
+(* 8 let-in *)
+eval_exp (LetInExp ("y", ConstExp (IntConst 5), VarExp "y"), []);;
+
+(* 9 functions -> Closures *)
+eval_exp (FunExp ("x", VarExp "x"), []);;
+
+(* 10 function application *)
+eval_exp (AppExp (FunExp ("x", VarExp "x"), ConstExp (IntConst 7)), []);;
+
+(* 11 recursive declaraions*)
+eval_dec (LetRec ("even", "x",
+IfExp (BinOpAppExp (EqOp, VarExp "x", ConstExp (IntConst 0)),
+ConstExp (BoolConst true),
+IfExp (BinOpAppExp (EqOp, VarExp "x", ConstExp (IntConst 1)),
+ConstExp (BoolConst false),
+AppExp (VarExp "even",
+BinOpAppExp (IntMinusOp, VarExp "x", ConstExp (IntConst 2)))))), []);;
