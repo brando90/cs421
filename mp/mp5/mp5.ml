@@ -11,19 +11,18 @@ let const_to_val c =
     | NilConst -> ListVal( [] )
     | UnitConst -> UnitVal
 
-let rec my_tl (lst:value list) =
-  match lst with
+let my_tl v_lst =
+  match v_lst with
     | [] -> None
-    | x::xs -> if xs=[] then Some x else my_tl xs
+    | v::vs -> Some ( ListVal( vs ) )
 
-let my_hd lst =
-  match lst with
+let my_hd v_lst =
+  match v_lst with
     | [] -> None
-    | x::xs -> Some x
+    | v::vs -> Some v
 
 (*  mon op -> value -> value *)
 let monOpApply op v =
-  (* print_value v;print_string "HERE!!!"; *)
   match op with
     | HdOp ->
       ( match v with
@@ -39,13 +38,13 @@ let monOpApply op v =
         | ListVal(value_list) ->
           ( match my_tl value_list with
               | None -> Exn(0)
-              | Some v -> v
+              | Some vs -> vs
             )
         | _ -> Exn(0) (* is this right? *)
       )
     | PrintOp ->
       ( match v with
-        | StringVal s -> print_string s;UnitVal
+        | StringVal s -> print_string (s);UnitVal
         | _ -> Exn(0) (* is this right? *)
       )
     | IntNegOp ->

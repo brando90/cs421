@@ -14,7 +14,7 @@ let parse s = Picomlparse.main Picomllex.token (Lexing.from_string s)
 
 (* These lists are for regular problems *)
 
-let eval_exp_tests = 
+let eval_exp_tests =
 [
 (* Problem 2 *)
 TEST1ARG(1, eval_exp, (ConstExp(IntConst 2), []));
@@ -29,7 +29,7 @@ TEST1ARG(1, eval_exp, (MonOpAppExp(IntNegOp, ConstExp (IntConst 2)), []));
 (* Problem 6 *)
 TEST1ARG(1, eval_exp, (BinOpAppExp (IntPlusOp, ConstExp(IntConst(3)), ConstExp(IntConst(4))),  []));
 (* Problem 7 *)
-TEST1ARG(1, eval_exp, (IfExp(ConstExp(BoolConst true), 
+TEST1ARG(1, eval_exp, (IfExp(ConstExp(BoolConst true),
                             ConstExp(IntConst 1), ConstExp(IntConst 0)), []));
 (* Problem 8 *)
 TEST1ARG(1, eval_exp, (LetInExp("y", ConstExp(IntConst 5), VarExp "y"), []));
@@ -116,7 +116,7 @@ TEST1ARG(2, eval_exp, (AppExp (VarExp "f", ConstExp (IntConst 3)),
  *)
 
 let eval_dec_test_cases = [
-(* Problems 1 and 2 *) 
+(* Problems 1 and 2 *)
 2, "(* Q1  and Q2*) true;;";
 2, "false;;";
 2, "2.4;;";
@@ -183,8 +183,8 @@ let eval_dec_test_cases = [
 ]
 
 
-let rubric = eval_exp_tests @ 
-             (List.map 
+let rubric = eval_exp_tests @
+             (List.map
              (fun (w,s) -> TEST1ARG(w, eval_dec, (parse s, [])))
              eval_dec_test_cases)
 
@@ -241,10 +241,10 @@ let smart_eval_dec_solution (s, t) =
                | Division_by_zero -> ((None, Exn 0), t)
 
 let grad_rubric =
- (*            (List.map 
+ (*            (List.map
              (fun (w,s) -> TEST1ARG_TWOFUN(w, smart_eval_dec_solution, smart_eval_dec_student, (parse s, [])))
              eval_dec_test_cases) @*)
-             (List.map 
+             (List.map
              (fun (w,s) -> TEST1ARG(w, eval_dec, (parse s, [])))
              eval_dec_test_cases2)
 
