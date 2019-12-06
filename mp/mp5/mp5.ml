@@ -178,13 +178,15 @@ let binOpApply binop (v1,v2) =
 (* exp * memory -> value *)
 let rec eval_exp (exp, m) =
   match exp with
-    | VarExp x ->
+    | VarExp x -> (* identifiers/variables*)
       let some_v=lookup_env m x in
       (match some_v with
-        | None -> raise (Failure "Not implemented yet.") (* TODO what do we do here? *)
+        | None -> Exn(0) (* TODO what do we do here? *)
         | Some v ->
           (match v with
-            | RecVarVal(f,y,e,m') -> raise (Failure "Not implemented yet.")
+            | RecVarVal(f,y,e,m') ->
+              let m''=ins_env m' f v in
+              Closure(y,e,m'')
             | _ -> v
               )
         )
@@ -220,7 +222,10 @@ let rec eval_exp (exp, m) =
       let v1=eval_exp (e1,m) in
       let m'=ins_env m x v1 in
       let v2=eval_exp (e2,m') in v2
-    | LetRecInExp (s1,s2,e1,e2) -> raise (Failure "Not implemented yet.")
+    | LetRecInExp (f,x,e1,e2) ->
+      let rec_val=RecVarVal(f,x,e1,m) in
+      let m'=ins_env m f rec_val in
+      let v=eval_exp (e2,m') in v
     | RaiseExp (e)                            -> raise (Failure "Not implemented yet.")
     | TryWithExp (e1,some_i,e2, lst) -> raise (Failure "Not implemented yet.") (* of (exp * int option * exp * (int option * exp) list) *)
 
