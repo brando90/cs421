@@ -220,28 +220,39 @@ let rec eval_exp (exp, m) =
           | _ -> Exn(0)
         )
     | AppExp (e1,e2) ->
-      let e1_closure=eval_exp (e1,m) in
-        ( match e1_closure with
-            | Closure (x,e',m') ->
-              let v'=eval_exp (e2,m) in
-              let m''=ins_env m' x v' in
-              let v=eval_exp (e',m'') in v
-            | _ -> Exn(0)
-          )
+    let v=eval_exp (e1,m) in
+      ( match v with
+        | Exn i -> Exn i
+        | _ ->
+          let v'=eval_exp (e2,m) in
+          ( match v' with
+            | Exn j -> Exn j
+            | _ ->
+              ( match v with
+               | Closure (x,e',m') ->
+                 let m''=ins_env m' x v' in
+                 let v''=eval_exp (e',m'') in v''
+               | _ -> Exn(0)
+              )
+            )
+        )
     | FunExp (x,e) -> Closure(x,e,m)
     | LetInExp (x,e1,e2) ->
       let v1=eval_exp (e1,m) in
-      let m'=ins_env m x v1 in
-      let v2=eval_exp (e2,m') in v2
+      ( match v1 with
+        | Exn i -> Exn i
+        | _ ->
+          let m'=ins_env m x v1 in
+          let v2=eval_exp (e2,m') in v2
+        )
     | LetRecInExp (f,x,e1,e2) ->
       let rec_val=RecVarVal(f,x,e1,m) in
       let m'=ins_env m f rec_val in
       let v=eval_exp (e2,m') in v
     | RaiseExp (e) ->
-      let v_n_i=eval_exp (e,m) in
-      (
-        match v_n_i with
-          | IntVal i -> Exn(i)
+      ( match eval_exp (e,m) with
+          | Exn i -> Exn(i)
+          | IntVal n -> Exn(n)
           | _ -> Exn(0)
         )
       (* in Exn(n) *)
@@ -273,12 +284,16 @@ let eval_dec (dec, m) =
       (new_binding, m)
       (* (Some "_", v) *)
     | Let (x,e) ->  (* let x = e;; in memory m *)
-      (* if condition for proof rule *)
-      let v=eval_exp (e, m) in (* (e,m)=>v*)
-      (* conclusion for proof rule *)
-      let new_binding = (Some x,v) in
-      let new_memory = ins_env m x v in
-      (new_binding,new_memory)
+      let v=eval_exp (e, m) in
+      ( match v with
+        | Exn i ->
+          let new_binding=(None,Exn i) in
+          (new_binding,m)
+        | _ ->
+          let new_binding = (Some x,v) in
+          let new_memory = ins_env m x v in
+          (new_binding,new_memory)
+        )
     | LetRec (f,x,e) ->
       let variable=Some f in
       let v=RecVarVal(f,x,e,m) in
