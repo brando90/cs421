@@ -50,3 +50,10 @@ IfExp (BinOpAppExp (EqOp, VarExp "x", ConstExp (IntConst 1)),
 ConstExp (BoolConst false),
 AppExp (VarExp "even",
 BinOpAppExp (IntMinusOp, VarExp "x", ConstExp (IntConst 2)))))), []);;
+
+(* 15 explicit exceptions *)
+eval_exp(RaiseExp (ConstExp (IntConst 1)),[]);;
+
+(* 16 implicit div *)
+eval_dec (Anon
+(BinOpAppExp(IntDivOp, ConstExp (IntConst 4), ConstExp (IntConst 0))), []);;

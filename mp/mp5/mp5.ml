@@ -8,7 +8,7 @@ let const_to_val c =
     | IntConst i -> IntVal i
     | FloatConst f -> FloatVal f
     | StringConst s -> StringVal s
-    | NilConst -> UnitVal (* TODO *)
+    | NilConst -> ListVal( [] )
     | UnitConst -> UnitVal
 
 let rec my_tl (lst:value list) =
@@ -193,7 +193,10 @@ let rec eval_exp (exp, m) =
     | ConstExp c -> const_to_val c
     | MonOpAppExp (mon_op, e) ->
       let v=eval_exp (e, m) in
-      let v'=monOpApply mon_op v in v'
+      ( match v with
+        | Exn i -> Exn i
+        | _ -> let v'=monOpApply mon_op v in v'
+        )
     | BinOpAppExp (bin_op, e1, e2)   ->
       let v1=eval_exp (e1,m) in
       let v2=eval_exp (e2,m) in
@@ -226,8 +229,31 @@ let rec eval_exp (exp, m) =
       let rec_val=RecVarVal(f,x,e1,m) in
       let m'=ins_env m f rec_val in
       let v=eval_exp (e2,m') in v
-    | RaiseExp (e)                            -> raise (Failure "Not implemented yet.")
-    | TryWithExp (e1,some_i,e2, lst) -> raise (Failure "Not implemented yet.") (* of (exp * int option * exp * (int option * exp) list) *)
+    | RaiseExp (e) ->
+      let v_n_i=eval_exp (e,m) in
+      (
+        match v_n_i with
+          | IntVal i -> Exn(i)
+          | _ -> Exn(0)
+        )
+      (* in Exn(n) *)
+    | TryWithExp (e,some_n1,e1, n_2_e) ->  (* of (exp * int option * exp * (int option * exp) list) *)
+      let v=eval_exp (e,m) in
+      ( match v with
+        | Exn j -> handle_try_with ((some_n1,e1)::n_2_e) j m
+        | _ -> v
+        )
+
+and handle_try_with n_2_e j m =
+  ( match n_2_e with
+  | [] -> Exn(j)
+  | (some_ni,ei)::n_2_es ->
+    let vi=eval_exp (ei,m) in
+    ( match some_ni with
+    | None -> vi
+    | Some ni -> if ni=j then vi else handle_try_with n_2_es j m
+    )
+  )
 
 (*  dec * memory -> (string option * value ) * memory  *)
 let eval_dec (dec, m) =
