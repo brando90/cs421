@@ -1,0 +1,8 @@
+#load "common.cmo";;
+#load "picomlparse.cmo";;
+#load "picomllex.cmo";;
+#load "solution.cmo";;
+open Common;;
+#use "ml6.ml";;
+
+let parse s = Picomlparse.main Picomllex.token (Lexing.from_string s);;
