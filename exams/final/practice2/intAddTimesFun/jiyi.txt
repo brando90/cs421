@@ -1,0 +1,57 @@
+expr =
+    expr + next
+  | expr - next
+  | next
+
+next =
+    next * dealfun
+  | dealfun
+
+dealfun =
+    atomic
+  | fun IDENT -> expr
+
+atomic
+     IDENT
+   | INT
+   | ( expr )
+
+fun x -> 1 + fun x -> 1 + 1
+the above parses it as:
+(fun x -> 1) + (fun x -> 1 + 1)
+
+-------------------- correct way
+
+expr =
+     pure_expr + next
+   | pure_expr - next
+   | next
+
+next =
+     pure_next * dealfun
+   | dealfun
+
+dealfun =
+     fun IDENT -> expr
+   | atomic
+
+pure_expr =
+     pure_expr + pure_next
+   | pure_expr + pure_next
+   | pure_next
+
+pure_next =
+     atomic
+   | pure_next * atomic
+
+atomic
+     IDENT
+   | INT
+   | ( expr )
+
+
+fun x -> 1 + 1
+
+fun x -> 1 + fun x -> 1 + 1
+
+1 + fun x -> 1 + 17

@@ -1,0 +1,270 @@
+   0  $accept : %entry% $end
+
+   1  main : expression DSEMI
+   2       | LET IDENT EQUALS expression DSEMI
+   3       | LET REC IDENT IDENT EQUALS expression DSEMI
+
+   4  expression : FUN IDENT ARROW nof
+
+   5  nof : nof PLUS nofpm
+   6      | nof MINUS nofpm
+   7      | nofpm
+
+   8  nofpm : nofpm TIMES ident_num
+   9        | ident_num
+
+  10  ident_num : INT
+  11            | IDENT
+
+  12  %entry% : '\001' main
+
+state 0
+	$accept : . %entry% $end  (0)
+
+	'\001'  shift 1
+	.  error
+
+	%entry%  goto 2
+
+
+state 1
+	%entry% : '\001' . main  (12)
+
+	LET  shift 3
+	FUN  shift 4
+	.  error
+
+	main  goto 5
+	expression  goto 6
+
+
+state 2
+	$accept : %entry% . $end  (0)
+
+	$end  accept
+
+
+state 3
+	main : LET . IDENT EQUALS expression DSEMI  (2)
+	main : LET . REC IDENT IDENT EQUALS expression DSEMI  (3)
+
+	IDENT  shift 7
+	REC  shift 8
+	.  error
+
+
+state 4
+	expression : FUN . IDENT ARROW nof  (4)
+
+	IDENT  shift 9
+	.  error
+
+
+state 5
+	%entry% : '\001' main .  (12)
+
+	.  reduce 12
+
+
+state 6
+	main : expression . DSEMI  (1)
+
+	DSEMI  shift 10
+	.  error
+
+
+state 7
+	main : LET IDENT . EQUALS expression DSEMI  (2)
+
+	EQUALS  shift 11
+	.  error
+
+
+state 8
+	main : LET REC . IDENT IDENT EQUALS expression DSEMI  (3)
+
+	IDENT  shift 12
+	.  error
+
+
+state 9
+	expression : FUN IDENT . ARROW nof  (4)
+
+	ARROW  shift 13
+	.  error
+
+
+state 10
+	main : expression DSEMI .  (1)
+
+	.  reduce 1
+
+
+state 11
+	main : LET IDENT EQUALS . expression DSEMI  (2)
+
+	FUN  shift 4
+	.  error
+
+	expression  goto 14
+
+
+state 12
+	main : LET REC IDENT . IDENT EQUALS expression DSEMI  (3)
+
+	IDENT  shift 15
+	.  error
+
+
+state 13
+	expression : FUN IDENT ARROW . nof  (4)
+
+	INT  shift 16
+	IDENT  shift 17
+	.  error
+
+	nof  goto 18
+	nofpm  goto 19
+	ident_num  goto 20
+
+
+state 14
+	main : LET IDENT EQUALS expression . DSEMI  (2)
+
+	DSEMI  shift 21
+	.  error
+
+
+state 15
+	main : LET REC IDENT IDENT . EQUALS expression DSEMI  (3)
+
+	EQUALS  shift 22
+	.  error
+
+
+state 16
+	ident_num : INT .  (10)
+
+	.  reduce 10
+
+
+state 17
+	ident_num : IDENT .  (11)
+
+	.  reduce 11
+
+
+state 18
+	expression : FUN IDENT ARROW nof .  (4)
+	nof : nof . PLUS nofpm  (5)
+	nof : nof . MINUS nofpm  (6)
+
+	PLUS  shift 23
+	MINUS  shift 24
+	DSEMI  reduce 4
+
+
+state 19
+	nof : nofpm .  (7)
+	nofpm : nofpm . TIMES ident_num  (8)
+
+	TIMES  shift 25
+	PLUS  reduce 7
+	MINUS  reduce 7
+	DSEMI  reduce 7
+
+
+state 20
+	nofpm : ident_num .  (9)
+
+	.  reduce 9
+
+
+state 21
+	main : LET IDENT EQUALS expression DSEMI .  (2)
+
+	.  reduce 2
+
+
+state 22
+	main : LET REC IDENT IDENT EQUALS . expression DSEMI  (3)
+
+	FUN  shift 4
+	.  error
+
+	expression  goto 26
+
+
+state 23
+	nof : nof PLUS . nofpm  (5)
+
+	INT  shift 16
+	IDENT  shift 17
+	.  error
+
+	nofpm  goto 27
+	ident_num  goto 20
+
+
+state 24
+	nof : nof MINUS . nofpm  (6)
+
+	INT  shift 16
+	IDENT  shift 17
+	.  error
+
+	nofpm  goto 28
+	ident_num  goto 20
+
+
+state 25
+	nofpm : nofpm TIMES . ident_num  (8)
+
+	INT  shift 16
+	IDENT  shift 17
+	.  error
+
+	ident_num  goto 29
+
+
+state 26
+	main : LET REC IDENT IDENT EQUALS expression . DSEMI  (3)
+
+	DSEMI  shift 30
+	.  error
+
+
+state 27
+	nof : nof PLUS nofpm .  (5)
+	nofpm : nofpm . TIMES ident_num  (8)
+
+	TIMES  shift 25
+	PLUS  reduce 5
+	MINUS  reduce 5
+	DSEMI  reduce 5
+
+
+state 28
+	nof : nof MINUS nofpm .  (6)
+	nofpm : nofpm . TIMES ident_num  (8)
+
+	TIMES  shift 25
+	PLUS  reduce 6
+	MINUS  reduce 6
+	DSEMI  reduce 6
+
+
+state 29
+	nofpm : nofpm TIMES ident_num .  (8)
+
+	.  reduce 8
+
+
+state 30
+	main : LET REC IDENT IDENT EQUALS expression DSEMI .  (3)
+
+	.  reduce 3
+
+
+60 terminals, 7 nonterminals
+13 grammar rules, 31 states
