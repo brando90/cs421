@@ -1,0 +1,38 @@
+let rubric_version = "1.0"
+let rubric_title = "Continuation Passing Style, Higher-Order Functions, sum_all"
+(**************************************************************************
+ * You can add new test cases by adding new elements to the following lists
+ * Format is:
+ * TEST<X>ARG(<weight>, <function_name>, <arg1>, <arg2>, ..., <argX>)
+ *
+ * <X> is the number of argument that the function being tested takes.
+ **************************************************************************)
+
+let file = "student.ml"
+
+open Check_cps
+let is_cps_check _ _ = true
+let is_cps_of_check _ _ _ = true
+
+let idk x = x
+
+open Check_recursion
+let forward_recursion_check = fun _ -> fun _ -> true
+let tail_recursion_check = fun _ -> fun _ -> true
+
+open Common
+
+(* This list is for regular problems *)
+let rubric =
+[
+  TEST1ARG(1, sum_all, ((fun x -> truncate x >= 2), [1.3;2.5;3.9]));
+  TEST2ARG(0, sum_allk, ((fun x -> fun k -> k true), []), (fun s -> ()));
+  TEST2ARG(0, sum_allk, ((fun x -> fun k -> k true), []), (fun s -> grab_trace(s);()));
+  TEST2ARG(1, sum_allk, ((fun x -> fun k -> Solution.truncatek x (fun y -> geqk(y,2) k)), [1.3;2.5;3.9]), (fun s -> grab_trace(string_of_float s)));
+  TEST2ARG_TWOFUN(2, is_cps_check, check_is_cps, file, "sum_allk");
+  TEST3ARG_TWOFUN(2, is_cps_of_check, check_is_cps_of, file, "sum_all", "sum_allk")
+]
+(* Note: the last entry should not be followed by a semicolon. *)
+
+let extra_rubric = [
+]
