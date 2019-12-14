@@ -1,0 +1,415 @@
+   0  $accept : %entry% $end
+
+   1  main : exp DSEMI
+   2       | LET IDENT EQUALS exp DSEMI
+   3       | LET REC IDENT IDENT EQUALS exp DSEMI
+
+   4  exp : pure_exp DPLUS next
+   5      | pure_exp DMINUS next
+   6      | next
+
+   7  next : atomic EXP next
+   8       | deal_letin
+
+   9  deal_letin : LET IDENT EQUALS exp IN exp
+  10             | atomic
+
+  11  pure_exp : pure_exp DPLUS pure_next
+  12           | pure_exp DMINUS pure_next
+  13           | pure_next
+
+  14  pure_next : atomic EXP pure_next
+  15            | atomic
+
+  16  atomic : IDENT
+  17         | FLOAT
+  18         | LBRAC exp RBRAC
+
+  19  %entry% : '\001' main
+
+state 0
+	$accept : . %entry% $end  (0)
+
+	'\001'  shift 1
+	.  error
+
+	%entry%  goto 2
+
+
+state 1
+	%entry% : '\001' . main  (19)
+
+	FLOAT  shift 3
+	IDENT  shift 4
+	LET  shift 5
+	LBRAC  shift 6
+	.  error
+
+	main  goto 7
+	exp  goto 8
+	pure_exp  goto 9
+	next  goto 10
+	atomic  goto 11
+	deal_letin  goto 12
+	pure_next  goto 13
+
+
+state 2
+	$accept : %entry% . $end  (0)
+
+	$end  accept
+
+
+state 3
+	atomic : FLOAT .  (17)
+
+	.  reduce 17
+
+
+state 4
+	atomic : IDENT .  (16)
+
+	.  reduce 16
+
+
+state 5
+	main : LET . IDENT EQUALS exp DSEMI  (2)
+	main : LET . REC IDENT IDENT EQUALS exp DSEMI  (3)
+	deal_letin : LET . IDENT EQUALS exp IN exp  (9)
+
+	IDENT  shift 14
+	REC  shift 15
+	.  error
+
+
+state 6
+	atomic : LBRAC . exp RBRAC  (18)
+
+	FLOAT  shift 3
+	IDENT  shift 4
+	LET  shift 16
+	LBRAC  shift 6
+	.  error
+
+	exp  goto 17
+	pure_exp  goto 9
+	next  goto 10
+	atomic  goto 11
+	deal_letin  goto 12
+	pure_next  goto 13
+
+
+state 7
+	%entry% : '\001' main .  (19)
+
+	.  reduce 19
+
+
+state 8
+	main : exp . DSEMI  (1)
+
+	DSEMI  shift 18
+	.  error
+
+
+state 9
+	exp : pure_exp . DPLUS next  (4)
+	exp : pure_exp . DMINUS next  (5)
+	pure_exp : pure_exp . DPLUS pure_next  (11)
+	pure_exp : pure_exp . DMINUS pure_next  (12)
+
+	DPLUS  shift 19
+	DMINUS  shift 20
+	.  error
+
+
+state 10
+	exp : next .  (6)
+
+	.  reduce 6
+
+
+state 11
+	next : atomic . EXP next  (7)
+	deal_letin : atomic .  (10)
+	pure_next : atomic . EXP pure_next  (14)
+	pure_next : atomic .  (15)
+
+	EXP  shift 21
+	DPLUS  reduce 15
+	DMINUS  reduce 15
+	DSEMI  reduce 10
+	IN  reduce 10
+	RBRAC  reduce 10
+
+
+state 12
+	next : deal_letin .  (8)
+
+	.  reduce 8
+
+
+state 13
+	pure_exp : pure_next .  (13)
+
+	.  reduce 13
+
+
+state 14
+	main : LET IDENT . EQUALS exp DSEMI  (2)
+	deal_letin : LET IDENT . EQUALS exp IN exp  (9)
+
+	EQUALS  shift 22
+	.  error
+
+
+state 15
+	main : LET REC . IDENT IDENT EQUALS exp DSEMI  (3)
+
+	IDENT  shift 23
+	.  error
+
+
+state 16
+	deal_letin : LET . IDENT EQUALS exp IN exp  (9)
+
+	IDENT  shift 24
+	.  error
+
+
+state 17
+	atomic : LBRAC exp . RBRAC  (18)
+
+	RBRAC  shift 25
+	.  error
+
+
+state 18
+	main : exp DSEMI .  (1)
+
+	.  reduce 1
+
+
+state 19
+	exp : pure_exp DPLUS . next  (4)
+	pure_exp : pure_exp DPLUS . pure_next  (11)
+
+	FLOAT  shift 3
+	IDENT  shift 4
+	LET  shift 16
+	LBRAC  shift 6
+	.  error
+
+	next  goto 26
+	atomic  goto 11
+	deal_letin  goto 12
+	pure_next  goto 27
+
+
+state 20
+	exp : pure_exp DMINUS . next  (5)
+	pure_exp : pure_exp DMINUS . pure_next  (12)
+
+	FLOAT  shift 3
+	IDENT  shift 4
+	LET  shift 16
+	LBRAC  shift 6
+	.  error
+
+	next  goto 28
+	atomic  goto 11
+	deal_letin  goto 12
+	pure_next  goto 29
+
+
+state 21
+	next : atomic EXP . next  (7)
+	pure_next : atomic EXP . pure_next  (14)
+
+	FLOAT  shift 3
+	IDENT  shift 4
+	LET  shift 16
+	LBRAC  shift 6
+	.  error
+
+	next  goto 30
+	atomic  goto 11
+	deal_letin  goto 12
+	pure_next  goto 31
+
+
+state 22
+	main : LET IDENT EQUALS . exp DSEMI  (2)
+	deal_letin : LET IDENT EQUALS . exp IN exp  (9)
+
+	FLOAT  shift 3
+	IDENT  shift 4
+	LET  shift 16
+	LBRAC  shift 6
+	.  error
+
+	exp  goto 32
+	pure_exp  goto 9
+	next  goto 10
+	atomic  goto 11
+	deal_letin  goto 12
+	pure_next  goto 13
+
+
+state 23
+	main : LET REC IDENT . IDENT EQUALS exp DSEMI  (3)
+
+	IDENT  shift 33
+	.  error
+
+
+state 24
+	deal_letin : LET IDENT . EQUALS exp IN exp  (9)
+
+	EQUALS  shift 34
+	.  error
+
+
+state 25
+	atomic : LBRAC exp RBRAC .  (18)
+
+	.  reduce 18
+
+
+state 26
+	exp : pure_exp DPLUS next .  (4)
+
+	.  reduce 4
+
+
+state 27
+	pure_exp : pure_exp DPLUS pure_next .  (11)
+
+	.  reduce 11
+
+
+state 28
+	exp : pure_exp DMINUS next .  (5)
+
+	.  reduce 5
+
+
+state 29
+	pure_exp : pure_exp DMINUS pure_next .  (12)
+
+	.  reduce 12
+
+
+state 30
+	next : atomic EXP next .  (7)
+
+	.  reduce 7
+
+
+state 31
+	pure_next : atomic EXP pure_next .  (14)
+
+	.  reduce 14
+
+
+state 32
+	main : LET IDENT EQUALS exp . DSEMI  (2)
+	deal_letin : LET IDENT EQUALS exp . IN exp  (9)
+
+	DSEMI  shift 35
+	IN  shift 36
+	.  error
+
+
+state 33
+	main : LET REC IDENT IDENT . EQUALS exp DSEMI  (3)
+
+	EQUALS  shift 37
+	.  error
+
+
+state 34
+	deal_letin : LET IDENT EQUALS . exp IN exp  (9)
+
+	FLOAT  shift 3
+	IDENT  shift 4
+	LET  shift 16
+	LBRAC  shift 6
+	.  error
+
+	exp  goto 38
+	pure_exp  goto 9
+	next  goto 10
+	atomic  goto 11
+	deal_letin  goto 12
+	pure_next  goto 13
+
+
+state 35
+	main : LET IDENT EQUALS exp DSEMI .  (2)
+
+	.  reduce 2
+
+
+state 36
+	deal_letin : LET IDENT EQUALS exp IN . exp  (9)
+
+	FLOAT  shift 3
+	IDENT  shift 4
+	LET  shift 16
+	LBRAC  shift 6
+	.  error
+
+	exp  goto 39
+	pure_exp  goto 9
+	next  goto 10
+	atomic  goto 11
+	deal_letin  goto 12
+	pure_next  goto 13
+
+
+state 37
+	main : LET REC IDENT IDENT EQUALS . exp DSEMI  (3)
+
+	FLOAT  shift 3
+	IDENT  shift 4
+	LET  shift 16
+	LBRAC  shift 6
+	.  error
+
+	exp  goto 40
+	pure_exp  goto 9
+	next  goto 10
+	atomic  goto 11
+	deal_letin  goto 12
+	pure_next  goto 13
+
+
+state 38
+	deal_letin : LET IDENT EQUALS exp . IN exp  (9)
+
+	IN  shift 36
+	.  error
+
+
+state 39
+	deal_letin : LET IDENT EQUALS exp IN exp .  (9)
+
+	.  reduce 9
+
+
+state 40
+	main : LET REC IDENT IDENT EQUALS exp . DSEMI  (3)
+
+	DSEMI  shift 41
+	.  error
+
+
+state 41
+	main : LET REC IDENT IDENT EQUALS exp DSEMI .  (3)
+
+	.  reduce 3
+
+
+60 terminals, 9 nonterminals
+20 grammar rules, 42 states

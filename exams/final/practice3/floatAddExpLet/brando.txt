@@ -1,0 +1,45 @@
+
+2 ** 2 + 2 -> (2 ** 2) + 2 because ** has higher precedence
+
+exp =
+  | exp + npm
+  | exp - npm
+  | npm
+
+nopm =
+  | atomic ** npm
+  | atomic
+
+atomic =
+  | IDENT
+  | FLOAT
+  | ( exp )
+
+----
+
+<exp> =
+  | <pure_exp> +. <next>
+  | <pure_exp> -. <next>
+  | <next>
+
+<next> =
+  | <atomic> ** <next>
+  | <deal_letin>
+
+<deal_letin> =
+  | let IDENT = <exp> in <exp>
+  | <atomic>
+
+<pure_exp> =
+  | <pure_exp> +. <pure_next>
+  | <pure_exp> -. <pure_next>
+  | <pure_next>
+
+<pure_next> =
+  | <atomic> ** <pure_next>
+  | <atomic>
+
+<atomic> =
+  | IDENT
+  | FLOAT
+  | ( <exp> )
