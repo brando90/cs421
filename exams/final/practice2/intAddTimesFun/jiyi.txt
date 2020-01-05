@@ -1,6 +1,6 @@
-expr =
-    expr + next
-  | expr - next
+exp =
+    exp + next
+  | exp - next
   | next
 
 next =
@@ -9,12 +9,12 @@ next =
 
 dealfun =
     atomic
-  | fun IDENT -> expr
+  | fun IDENT -> exp
 
 atomic
      IDENT
    | INT
-   | ( expr )
+   | ( exp )
 
 fun x -> 1 + fun x -> 1 + 1
 the above parses it as:
@@ -22,9 +22,9 @@ the above parses it as:
 
 -------------------- correct way
 
-expr =
-     pure_expr + next
-   | pure_expr - next
+exp =
+     pure_exp + next
+   | pure_exp - next
    | next
 
 next =
@@ -32,26 +32,29 @@ next =
    | dealfun
 
 dealfun =
-     fun IDENT -> expr
+     fun IDENT -> exp
    | atomic
 
-pure_expr =
-     pure_expr + pure_next
-   | pure_expr + pure_next
+pure_exp =
+     pure_exp + pure_next
+   | pure_exp - pure_next
    | pure_next
 
 pure_next =
-     atomic
-   | pure_next * atomic
+     pure_next * atomic
+   | atomic
 
 atomic
      IDENT
    | INT
-   | ( expr )
+   | ( exp )
 
-
-fun x -> 1 + 1
 
 fun x -> 1 + fun x -> 1 + 1
 
 1 + fun x -> 1 + 17
+
+-------------------- correct way
+
+exp =
+  nof +

@@ -1,0 +1,87 @@
+open Common
+let rubric_version = "1.0"
+let rubric_title = "CS421 Fall 2019 ML6"
+
+(**************************************************************************
+ * You can add new test cases by adding new elements to the following lists
+ * Format is:
+ * TEST<X>ARG(<weight>, <function_name>, <arg1>, <arg2>, ..., <argX>)
+ *
+ * <X> is the number of argument that the function being tested takes.
+ **************************************************************************)
+
+let parse s = Picomlparse.main Picomllex.token (Lexing.from_string s)
+
+let parse_exp s =
+    match parse s with Anon e -> e
+    | _ -> raise (Failure ("<<"^s^">> isn't an expression.\n"))
+
+let cps_dec dec cont ke=   
+  match dec
+  with Anon e -> cps_exp e (FnContCPS ("", cont)) ke (*EmptyExnContCPS*)
+  | Let (x,e) -> cps_exp e (FnContCPS (x, cont)) ke (*EmptyExnContCPS*)
+  | LetRec (f,x,e) ->
+     let j = next_index() in
+     let ecps = cps_exp e (ContVarCPS Kvar) (ExnContVarCPS j) in
+      FixCPS(FnContCPS(f, cont),f,x,Kvar,j,ecps)
+
+let rec eval_exp_cps_aux one_step_exp_cps_eval steps env ecps =
+    match one_step_exp_cps_eval env ecps with
+      Intermediate(env1, ecps1) ->
+      (eval_exp_cps_aux one_step_exp_cps_eval
+        (Intermediate(env1, ecps1)::steps)) env1 ecps1
+    | result -> result::steps  (* We finished or died *)
+
+let rec eval_exp_cps_sol =
+    eval_exp_cps_aux Solution.one_step_exp_cps_eval []
+
+let rec eval_exp_cps_stu =
+    eval_exp_cps_aux Student.one_step_exp_cps_eval []
+
+let rec eval_dec_aux eval_exp_cps env dec = 
+  match dec
+  with Anon e -> env
+  | Let (x,e) -> 
+   (match eval_exp_cps env (cps_exp e External EmptyExnContCPS)
+    with (Final v)::rest -> ValueBinding (x,v)::env
+    | _ -> raise (Failure "Bug in testing program"))
+  | LetRec (f,x,e) ->
+     let j = next_index() in
+     let ecps2 = cps_exp e (ContVarCPS Kvar) (ExnContVarCPS j) in
+     let v = CPSRecClosureVal(f, x, Kvar, j, ecps2, env) in
+     ValueBinding (f,v)::env
+
+let eval_dec_slist_aux eval_exp_cps env declist =
+    List.fold_left
+    (fun e -> fun s -> eval_dec_aux eval_exp_cps e (parse s))
+    env
+    declist
+
+let eval_dec_slist_sol = eval_dec_slist_aux eval_exp_cps_sol [];;
+let eval_dec_slist_stu = eval_dec_slist_aux eval_exp_cps_stu [];;
+
+let rubric = [
+(* Problem 8, 3 pts *)
+TEST2ARG(1, one_step_exp_cps_eval, [],
+  (cps_dec (parse "let rec f n = if n = 0 then 1 else f (n - 1);;")
+   (VarCPS(External, "f"))
+  EmptyExnContCPS));
+
+TEST2ARG(1, one_step_exp_cps_eval, [ValueBinding("y", IntVal 3)],
+  (cps_dec
+   (parse
+    "let rec even n = if n = 0 then true else if n = 1 then false else (even (n - 2));;")
+   (VarCPS(External, "even"))
+  EmptyExnContCPS));
+
+TEST2ARG(1, one_step_exp_cps_eval, [ValueBinding("y", IntVal 3)],
+  (cps_dec
+   (parse
+    "let rec even n = if n = 0 then true else if n = 1 then false else (even (n - 2));;")
+   (VarCPS(FnContCPS("z",VarCPS(External,"z")), "even"))
+  EmptyExnContCPS));
+]
+
+(* This list is for extra credit problems *)
+
+let extra_rubric = []

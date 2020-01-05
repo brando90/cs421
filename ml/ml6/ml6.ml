@@ -25,7 +25,7 @@ let rec app_cont_to_value env k v =
     | ContVarCPS _k ->
       let some_cont_k = lookup_cont env _k in
       ( match some_cont_k with
-        | None -> UncaughtException 0
+        | None -> Failed
         | Some (cont, cont_env) ->
           app_cont_to_value cont_env cont v
         )

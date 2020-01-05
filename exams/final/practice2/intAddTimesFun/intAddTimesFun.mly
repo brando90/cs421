@@ -29,26 +29,10 @@ main:
   | LET REC IDENT IDENT EQUALS expression DSEMI    { (LetRec ($3, $4, $6)) }
 
 expression:
-  | FUN IDENT ARROW nof { FunExp($2, $4) }
+  | pure_expr PLUS next
+  | pure_expr MINUS next
+  | next
+  | pure_next
 
-nof:
-  | nof PLUS nofpm { BinOpAppExp(IntPlusOp, $1, $3) }
-  | nof MINUS nofpm { BinOpAppExp(IntMinusOp, $1, $3) }
-  | nofpm { $1 }
-
-nofpm:
-  | nofpm TIMES ident_num { BinOpAppExp(IntTimesOp, $1, $3) }
-  | ident_num { $1 }
-
-ident_num:
-  | INT { ConstExp( IntConst($1) ) }
-  | IDENT { VarExp($1) }
-
-/* ident:
-  | IDENT { $1 } */
-
-/* For the second extra credit, if you want to try it */
-
-/* pat:
-  | UNDERSCORE	{ None }
-  | INT		{ Some $1 } */
+next:
+  | pure 

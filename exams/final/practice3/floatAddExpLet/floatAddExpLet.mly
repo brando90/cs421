@@ -31,8 +31,8 @@ main:
   | LET REC IDENT IDENT EQUALS exp DSEMI    { (LetRec ($3, $4, $6)) }
 
 exp:
-  | exp DPLUS next {  BinOpAppExp(FloatPlusOp, $1, $3) }
-  | exp DMINUS next {  BinOpAppExp(FloatMinusOp, $1, $3) }
+  | pure_exp DPLUS next {  BinOpAppExp(FloatPlusOp, $1, $3) }
+  | pure_exp DMINUS next {  BinOpAppExp(FloatMinusOp, $1, $3) }
   | next { $1 }
 
 next:
