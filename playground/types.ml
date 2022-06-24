@@ -27,7 +27,6 @@ Type expression can use the operator |, which means “alternative”, “one of
 
 type my_brothers = Andres | Alonso;;
 type my_dogs = Max | Obamita;;
-type my_girls = Shani | Yasmin | Ashley | Monika;;
 
 (* *)
 
